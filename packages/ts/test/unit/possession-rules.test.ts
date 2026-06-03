@@ -53,3 +53,36 @@ test("a defense player passing emits ACTION_UNUSUAL_CARRIER (warning)", () => {
   };
   expect(run(doc).some((i) => i.code === "ACTION_UNUSUAL_CARRIER" && i.severity === "warning")).toBe(true);
 });
+
+test("pickup of a carried (non-loose) ball is BALL_NOT_AT_LOCATION", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }, { type: "offense", nr: 2, x: 1, y: 5 }],
+    balls: [{ id: "ball_1", carried_by: "offense_1" }],
+    court: { ruleset: "fiba", type: "half_court" },
+    frames: [{ id: "f1",
+      actions: [{ player: "offense_2", type: "pickup", ball_id: "ball_1" }], end_state: {} }],
+  };
+  expect(run(doc).some((i) => i.code === "BALL_NOT_AT_LOCATION")).toBe(true);
+});
+
+test("pickup of a dead ball is BALL_NOT_AT_LOCATION", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
+    balls: [{ id: "ball_1", dead: true }],
+    court: { ruleset: "fiba", type: "half_court" },
+    frames: [{ id: "f1",
+      actions: [{ player: "offense_1", type: "pickup", ball_id: "ball_1" }], end_state: {} }],
+  };
+  expect(run(doc).some((i) => i.code === "BALL_NOT_AT_LOCATION")).toBe(true);
+});
+
+test("pickup of a LOOSE ball is clean", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
+    balls: [{ id: "ball_1", at: { x: 3, y: 3 } }],
+    court: { ruleset: "fiba", type: "half_court" },
+    frames: [{ id: "f1",
+      actions: [{ player: "offense_1", type: "pickup", ball_id: "ball_1" }], end_state: {} }],
+  };
+  expect(run(doc).filter((i) => i.code === "BALL_NOT_AT_LOCATION")).toEqual([]);
+});

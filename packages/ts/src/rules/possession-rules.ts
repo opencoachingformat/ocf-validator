@@ -1,12 +1,13 @@
 import type { Issue, OcfDoc } from "../types.js";
-import type { DocContext } from "../context.js";
-import { getFrames } from "../context.js";
+import { getFrames, type DocContext } from "../context.js";
 import type { FrameState } from "../possession.js";
 import { makeIssue } from "../codes.js";
 
 const BALL_DEPENDENT = new Set(["pass", "shoot", "dribble"]);
 const PICKUP = new Set(["pickup", "rebound"]);
 
+// Returns the resolved ball id, or the "AMBIGUOUS" sentinel (NOT a real ball id)
+// when ball_id is omitted with multiple balls in play, or null when no ball exists.
 function resolveBallId(action: Record<string, unknown>, ctx: DocContext): string | "AMBIGUOUS" | null {
   if (typeof action.ball_id === "string") return action.ball_id;
   if (ctx.ballIds.size === 1) return [...ctx.ballIds][0];
@@ -45,7 +46,10 @@ export function possessionRules(doc: OcfDoc, ctx: DocContext, states: FrameState
         const ball = resolveBallId(action, ctx);
         if (ball === "AMBIGUOUS") {
           issues.push(makeIssue("BALL_AMBIGUOUS", path, { player, count: ctx.ballIds.size }, frameId));
-        } else if (ball && state.looseAt(ball) === null && state.carrierOf(ball) !== null) {
+        } else if (ball && state.looseAt(ball) === null) {
+          // pickup/rebound needs a LOOSE ball. If it's not loose (carried by someone,
+          // or dead) it cannot be picked up. (An unknown ball id is separately caught
+          // by REF_BALL_UNKNOWN, so no guard is needed here.)
           issues.push(makeIssue("BALL_NOT_AT_LOCATION", path, { player, action: type }, frameId));
         }
       }
