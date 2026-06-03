@@ -28,3 +28,19 @@ test("legacy geometric model is rejected with MODEL_LEGACY", () => {
   expect(res.errors[0].code).toBe("MODEL_LEGACY");
   expect(res.errors.some((e) => e.code === "SCHEMA_INVALID")).toBe(false);
 });
+
+test("a frame with only entity_states is detected as legacy", () => {
+  const legacy = { ...base,
+    frames: [{ id: "f1", entity_states: { offense_1: { x: 0, y: 0 } } }] };
+  const res = validate(legacy);
+  expect(res.errors[0].code).toBe("MODEL_LEGACY");
+});
+
+test("a frame with a stray `lines` key is NOT legacy (gets schema error instead)", () => {
+  const strayLines = { ...base,
+    frames: [{ id: "f1", actions: [], end_state: {}, lines: [] }] };
+  const res = validate(strayLines);
+  expect(res.errors.every((e) => e.code !== "MODEL_LEGACY")).toBe(true);
+  // it should be rejected by the schema (additionalProperties:false) as SCHEMA_INVALID
+  expect(res.errors.some((e) => e.code === "SCHEMA_INVALID")).toBe(true);
+});
