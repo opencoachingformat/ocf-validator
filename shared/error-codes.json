@@ -1,0 +1,18 @@
+{
+  "SCHEMA_INVALID":            { "severity": "error",   "category": "schema",         "message": "Schema validation failed: {detail}", "spec_ref": "schema/v1.json" },
+  "MODEL_LEGACY":              { "severity": "error",   "category": "schema",         "message": "Document uses the superseded geometric model (entity_states/lines). Use the action model (actions/balls/end_state).", "spec_ref": "design §1" },
+  "JSON_PARSE":                { "severity": "error",   "category": "schema",         "message": "File is not valid JSON: {detail}", "spec_ref": "design §5" },
+  "REF_ENTITY_UNKNOWN":        { "severity": "error",   "category": "reference",      "message": "References unknown entity '{ref}'.", "spec_ref": "design §4-A" },
+  "REF_BALL_UNKNOWN":          { "severity": "error",   "category": "reference",      "message": "References unknown ball '{ref}'.", "spec_ref": "design §4-A" },
+  "REF_BRANCH_TARGET_UNKNOWN": { "severity": "error",   "category": "reference",      "message": "Branch outcome '{outcome}' targets unknown frame '{ref}'.", "spec_ref": "design §4-A" },
+  "REF_NAMED_POS_UNKNOWN":     { "severity": "error",   "category": "reference",      "message": "Unknown named position '{ref}'.", "spec_ref": "design §4-A" },
+  "BALL_CARRIER_MISMATCH":     { "severity": "error",   "category": "ball-possession","message": "Player '{player}' performs {action} but does not carry ball '{ball_id}'.", "spec_ref": "design §4-B" },
+  "BALL_NOT_AT_LOCATION":      { "severity": "error",   "category": "ball-possession","message": "Player '{player}' performs {action} but no ball is available to pick up.", "spec_ref": "design §4-B" },
+  "BALL_AMBIGUOUS":            { "severity": "error",   "category": "ball-possession","message": "Action by '{player}' omits ball_id but {count} balls are in play.", "spec_ref": "design §4-B" },
+  "ACTION_UNUSUAL_CARRIER":    { "severity": "warning", "category": "ball-possession","message": "Defense player '{player}' performs {action}; unusual but allowed.", "spec_ref": "design §4-B" },
+  "END_STATE_DISAGREE":        { "severity": "error",   "category": "coherence",      "message": "end_state for '{ref}' disagrees with action endpoint.", "spec_ref": "design §4-C" },
+  "START_STATE_DISCONTINUITY": { "severity": "warning", "category": "coherence",      "message": "start_state for '{ref}' differs from previous frame's end_state.", "spec_ref": "design §4-C" },
+  "CONTRAST_LOW":              { "severity": "warning", "category": "quality",        "message": "color_scheme '{ref}' contrast {ratio} is below 4.5:1.", "spec_ref": "spec §780" },
+  "ENTITY_OFFCOURT":           { "severity": "warning", "category": "quality",        "message": "Coordinate ({x},{y}) lies outside the {ruleset} court.", "spec_ref": "design §4-D" },
+  "EMPTY_FRAME":               { "severity": "warning", "category": "quality",        "message": "Frame '{ref}' has no actions and no state change.", "spec_ref": "design §4-D" }
+}
