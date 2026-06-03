@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs";
 import type { Issue, Result, OcfDoc } from "./types.js";
 import { schemaLevel } from "./schema-level.js";
+import { makeIssue } from "./codes.js";
 import { buildContext } from "./context.js";
 import { possessionByFrame } from "./possession.js";
 import { referenceRules } from "./rules/references.js";
@@ -35,4 +37,14 @@ export function validate(doc: OcfDoc): Result {
     ...qualityRules(doc, ctx),
   );
   return assemble(issues);
+}
+
+export function validateFile(path: string): Result {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(path, "utf8"));
+  } catch (err) {
+    return assemble([makeIssue("JSON_PARSE", "/", { detail: (err as Error).message })]);
+  }
+  return validate(parsed as OcfDoc);
 }
