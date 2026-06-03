@@ -40,3 +40,18 @@ test("--strict turns warnings into a failing exit code", () => {
   expect(runCli([write("warn.json", warn)], { log: (s) => out.push(s) })).toBe(0);
   expect(runCli(["--strict", write("warn2.json", warn)], { log: (s) => out.push(s) })).toBe(1);
 });
+
+test("--quiet suppresses human output (no log lines)", () => {
+  const out: string[] = [];
+  const code = runCli(["--quiet", write("quiet.json", good)], { log: (s) => out.push(s) });
+  expect(code).toBe(0);
+  expect(out).toEqual([]); // nothing printed
+});
+
+test("--quiet does not suppress --json output", () => {
+  const out: string[] = [];
+  const code = runCli(["--quiet", "--json", write("quietjson.json", good)], { log: (s) => out.push(s) });
+  expect(code).toBe(0);
+  expect(out.length).toBeGreaterThan(0);
+  expect(() => JSON.parse(out.join("\n"))).not.toThrow(); // JSON still emitted
+});
