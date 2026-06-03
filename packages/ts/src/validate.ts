@@ -1,5 +1,11 @@
 import type { Issue, Result, OcfDoc } from "./types.js";
 import { schemaLevel } from "./schema-level.js";
+import { buildContext } from "./context.js";
+import { possessionByFrame } from "./possession.js";
+import { referenceRules } from "./rules/references.js";
+import { possessionRules } from "./rules/possession-rules.js";
+import { coherenceRules } from "./rules/coherence.js";
+import { qualityRules } from "./rules/quality.js";
 
 export function assemble(issues: Issue[]): Result {
   const errors = issues.filter((i) => i.severity === "error");
@@ -19,6 +25,14 @@ export function validate(doc: OcfDoc): Result {
   const issues: Issue[] = [];
   const level0 = schemaLevel(doc);
   if (level0.length > 0) return assemble(level0); // stop on schema/legacy failure
-  // Level 1 (semantics) appended in later tasks.
+
+  const ctx = buildContext(doc);
+  const states = possessionByFrame(doc);
+  issues.push(
+    ...referenceRules(doc, ctx),
+    ...possessionRules(doc, ctx, states),
+    ...coherenceRules(doc, ctx),
+    ...qualityRules(doc, ctx),
+  );
   return assemble(issues);
 }

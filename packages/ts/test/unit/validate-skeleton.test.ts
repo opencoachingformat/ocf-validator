@@ -6,7 +6,7 @@ const MINIMAL_VALID_DOC = {
   meta: { id: "00000000-0000-4000-8000-000000000001", title: "t" },
   court: { ruleset: "fiba", type: "half_court" },
   entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
-  frames: [{ id: "f1", actions: [], end_state: {} }],
+  frames: [{ id: "f1", actions: [], end_state: { offense_1: { x: 0, y: 5 } } }],
 };
 
 test("a doc with no issues is valid with empty arrays", () => {
