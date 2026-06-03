@@ -295,3 +295,12 @@ These seed the suite, plus the 4 valid examples (`pick-and-roll`, `3-man-weave`,
 - Geometric interpolation of variant moves without a `to` (deferred; see §4-C).
 - `ACTION_UNUSUAL_CARRIER` beyond the basic offense/defense convention.
 - Renderer, editor, LLM generation (separate companion repos).
+- **`after`-based action ordering.** The intra-frame possession model (§4-B)
+  advances the carrier across a frame's actions in **array order**, not by
+  resolving each action's optional `after` dependency field. In all current
+  canonical examples array order already matches `after`-dependency order, so
+  this is correct in practice; but a spec-legal document that reorders purely
+  via `after` (a dependent action placed earlier in the array than its
+  prerequisite) could produce a false-positive `BALL_CARRIER_MISMATCH`.
+  Topological ordering by `after` is a v1.1 follow-up. The Python mirror must
+  use the same array-order model to stay conformance-equal.
