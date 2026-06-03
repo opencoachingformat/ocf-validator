@@ -1,12 +1,12 @@
 import type { Issue, OcfDoc } from "../types.js";
-import type { DocContext } from "../context.js";
+import { getFrames, type DocContext } from "../context.js";
 import { makeIssue } from "../codes.js";
 
 const ENTITY_KEYS = ["player", "for_player", "on_player", "to_player"] as const;
 
 export function referenceRules(doc: OcfDoc, ctx: DocContext): Issue[] {
   const issues: Issue[] = [];
-  const frames = (((doc as { frames?: unknown[] }).frames ?? []) as Record<string, unknown>[]);
+  const frames = getFrames(doc);
 
   frames.forEach((frame, fi) => {
     const frameId = frame.id as string | undefined;

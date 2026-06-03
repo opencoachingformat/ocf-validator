@@ -16,6 +16,11 @@ function entityRef(e: Record<string, unknown>): string | null {
   return type;
 }
 
+/** Frames as a typed array; empty if absent. Shared by all rule modules. */
+export function getFrames(doc: OcfDoc): Record<string, unknown>[] {
+  return (((doc as { frames?: unknown[] }).frames ?? []) as Record<string, unknown>[]);
+}
+
 export function buildContext(doc: OcfDoc): DocContext {
   const entityRefs = new Map<string, EntityInfo>();
   for (const e of (((doc as { entities?: unknown[] }).entities ?? []) as Record<string, unknown>[])) {
