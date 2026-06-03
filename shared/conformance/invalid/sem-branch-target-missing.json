@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": { "id": "00000000-0000-4000-8000-0000000000a1", "title": "branch to nowhere" },
+  "court": { "ruleset": "fiba", "type": "half_court" },
+  "entities": [{ "type": "offense", "nr": 1, "x": 0, "y": 5 }],
+  "balls": [{ "id": "ball_1", "carried_by": "offense_1" }],
+  "frames": [
+    { "id": "f1",
+      "actions": [{ "player": "offense_1", "type": "shoot", "ball_id": "ball_1" }],
+      "end_state": {}, "branches": { "make": "does_not_exist" } }
+  ]
+}

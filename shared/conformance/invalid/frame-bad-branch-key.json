@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": { "id": "00000000-0000-4000-8000-000000000005", "title": "bad branch outcome" },
+  "court": { "ruleset": "fiba", "type": "half_court" },
+  "entities": [ { "type": "offense", "nr": 1, "x": 0, "y": 5 } ],
+  "frames": [
+    {
+      "id": "f1",
+      "actions": [ { "player": "offense_1", "type": "shoot" } ],
+      "end_state": {},
+      "branches": { "swish": "f2" }
+    },
+    { "id": "f2", "actions": [], "end_state": {} }
+  ]
+}

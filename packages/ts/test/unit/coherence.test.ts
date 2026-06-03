@@ -26,6 +26,38 @@ test("variant move without explicit `to` is skipped (no false positive)", () => 
     .some((i) => i.code === "END_STATE_DISAGREE")).toBe(false);
 });
 
+test("multiple sequential moves: end_state agrees with the LAST move only", () => {
+  // dribble to (0,-8), then cut to (3.5,-4); end_state matches the cut. The
+  // intermediate dribble endpoint must NOT be flagged as a disagreement.
+  const doc = {
+    entities: [{ type: "offense", nr: 2, x: 0, y: 0 }], balls: [],
+    court: { ruleset: "fiba", type: "full_court" },
+    frames: [{ id: "f1",
+      actions: [
+        { player: "offense_2", type: "dribble", moves: [{ to: { x: 0, y: -8 } }] },
+        { player: "offense_2", type: "cut", moves: [{ to: { x: 3.5, y: -4 } }], after: "offense_2.dribble" },
+      ],
+      end_state: { offense_2: { x: 3.5, y: -4 } } }],
+  };
+  expect(coherenceRules(doc, buildContext(doc))
+    .some((i) => i.code === "END_STATE_DISAGREE")).toBe(false);
+});
+
+test("end_state disagreeing with the LAST move is still flagged", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 2, x: 0, y: 0 }], balls: [],
+    court: { ruleset: "fiba", type: "full_court" },
+    frames: [{ id: "f1",
+      actions: [
+        { player: "offense_2", type: "dribble", moves: [{ to: { x: 0, y: -8 } }] },
+        { player: "offense_2", type: "cut", moves: [{ to: { x: 3.5, y: -4 } }] },
+      ],
+      end_state: { offense_2: { x: 9, y: 9 } } }],
+  };
+  expect(coherenceRules(doc, buildContext(doc))
+    .some((i) => i.code === "END_STATE_DISAGREE")).toBe(true);
+});
+
 test("start_state differing from prior end_state is warned", () => {
   const doc = {
     entities: [{ type: "offense", nr: 1, x: 0, y: 0 }], balls: [],

@@ -76,6 +76,42 @@ test("pickup of a dead ball is BALL_NOT_AT_LOCATION", () => {
   expect(run(doc).some((i) => i.code === "BALL_NOT_AT_LOCATION")).toBe(true);
 });
 
+test("intra-frame pass then catch-and-shoot by the receiver is clean", () => {
+  // offense_1 carries at frame start, passes to offense_2 who shoots on the catch
+  // in the SAME frame. The shoot must be evaluated against the post-pass carrier.
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }, { type: "offense", nr: 2, x: 1, y: 5 }],
+    balls: [{ id: "ball_1", carried_by: "offense_1" }],
+    court: { ruleset: "fiba", type: "half_court" },
+    frames: [{ id: "f1",
+      actions: [
+        { player: "offense_1", type: "pass", to_player: "offense_2", ball_id: "ball_1" },
+        { player: "offense_2", type: "shoot", ball_id: "ball_1", on_catch: true },
+      ],
+      end_state: { balls: { ball_1: { dead: true } } } }],
+  };
+  expect(run(doc).filter((i) => i.severity === "error")).toEqual([]);
+});
+
+test("intra-frame: a third player shooting after a pass is still a mismatch", () => {
+  const doc = {
+    entities: [
+      { type: "offense", nr: 1, x: 0, y: 5 },
+      { type: "offense", nr: 2, x: 1, y: 5 },
+      { type: "offense", nr: 3, x: 2, y: 5 },
+    ],
+    balls: [{ id: "ball_1", carried_by: "offense_1" }],
+    court: { ruleset: "fiba", type: "half_court" },
+    frames: [{ id: "f1",
+      actions: [
+        { player: "offense_1", type: "pass", to_player: "offense_2", ball_id: "ball_1" },
+        { player: "offense_3", type: "shoot", ball_id: "ball_1" },
+      ],
+      end_state: {} }],
+  };
+  expect(run(doc).some((i) => i.code === "BALL_CARRIER_MISMATCH")).toBe(true);
+});
+
 test("pickup of a LOOSE ball is clean", () => {
   const doc = {
     entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],

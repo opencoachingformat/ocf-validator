@@ -1,0 +1,91 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": {
+    "id": "a3c2e1d0-9b8f-4a7e-b6c5-1d2e3f4a5b6c",
+    "title": "3-Man Weave",
+    "description": "Classic 3-player weave from full court. Players pass and follow their pass, weaving across the court to finish at the basket.",
+    "author": "OCF Examples",
+    "tags": ["passing", "transition", "full-court", "3-player", "beginner", "conditioning"],
+    "difficulty": "beginner",
+    "created": "2025-02-27T10:00:00Z",
+    "source_format": "open"
+  },
+  "court": { "ruleset": "fiba", "type": "full_court", "drill_focus": "offense" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": 0.0, "y": -14.0 },
+    { "type": "offense", "nr": 2, "x": -5.0, "y": -14.0 },
+    { "type": "offense", "nr": 3, "x": 5.0, "y": -14.0 }
+  ],
+  "balls": [ { "id": "ball_1", "carried_by": "offense_1" } ],
+  "frames": [
+    {
+      "id": "frame_1",
+      "label": "Start",
+      "description": "offense_1 passes to offense_2 and follows the pass, cutting behind offense_2.",
+      "duration_ms": 1500,
+      "actions": [
+        { "player": "offense_1", "type": "pass", "to_player": "offense_2", "ball_id": "ball_1", "variant": "chest" },
+        { "player": "offense_1", "type": "cut", "moves": [ { "to": { "x": -3.0, "y": -11.0 } } ], "after": "offense_1.pass" }
+      ],
+      "end_state": {
+        "offense_1": { "x": -3.0, "y": -11.0 },
+        "offense_2": { "x": -5.0, "y": -14.0 },
+        "offense_3": { "x": 5.0, "y": -14.0 },
+        "balls": { "ball_1": { "carried_by": "offense_2" } }
+      }
+    },
+    {
+      "id": "frame_2",
+      "label": "First Exchange",
+      "description": "offense_2 dribbles to the middle and passes to offense_3, then follows the pass.",
+      "duration_ms": 2000,
+      "actions": [
+        { "player": "offense_2", "type": "dribble", "ball_id": "ball_1", "moves": [ { "to": { "x": 0.0, "y": -8.0 } } ] },
+        { "player": "offense_2", "type": "pass", "to_player": "offense_3", "ball_id": "ball_1", "variant": "chest", "after": "offense_2.dribble" },
+        { "player": "offense_2", "type": "cut", "moves": [ { "to": { "x": 3.5, "y": -4.0 } } ], "after": "offense_2.pass" },
+        { "player": "offense_1", "type": "move", "moves": [ { "to": { "x": -5.0, "y": -8.0 } } ] }
+      ],
+      "end_state": {
+        "offense_1": { "x": -5.0, "y": -8.0 },
+        "offense_2": { "x": 3.5, "y": -4.0 },
+        "offense_3": { "x": 5.0, "y": -8.0 },
+        "balls": { "ball_1": { "carried_by": "offense_3" } }
+      }
+    },
+    {
+      "id": "frame_3",
+      "label": "Second Exchange",
+      "description": "offense_3 dribbles toward the middle and passes to offense_1 cutting from the left, then follows.",
+      "duration_ms": 2000,
+      "actions": [
+        { "player": "offense_3", "type": "dribble", "ball_id": "ball_1", "moves": [ { "to": { "x": 0.0, "y": 0.0 } } ] },
+        { "player": "offense_3", "type": "pass", "to_player": "offense_1", "ball_id": "ball_1", "variant": "chest", "after": "offense_3.dribble" },
+        { "player": "offense_3", "type": "cut", "moves": [ { "to": { "x": -3.0, "y": 5.0 } } ], "after": "offense_3.pass" },
+        { "player": "offense_1", "type": "move", "moves": [ { "to": { "x": -5.0, "y": 0.0 } } ] },
+        { "player": "offense_2", "type": "move", "moves": [ { "to": { "x": 5.0, "y": 0.0 } } ] }
+      ],
+      "end_state": {
+        "offense_1": { "x": -5.0, "y": 0.0 },
+        "offense_2": { "x": 5.0, "y": 0.0 },
+        "offense_3": { "x": -3.0, "y": 5.0 },
+        "balls": { "ball_1": { "carried_by": "offense_1" } }
+      }
+    },
+    {
+      "id": "frame_4",
+      "label": "Finish",
+      "description": "offense_1 attacks the basket for the layup. offense_2 fills the right wing as the kick-out option.",
+      "duration_ms": 2000,
+      "actions": [
+        { "player": "offense_1", "type": "dribble", "ball_id": "ball_1", "moves": [ { "variant": "speed", "to": { "named": "basket" } } ] },
+        { "player": "offense_1", "type": "shoot", "ball_id": "ball_1", "variant": "layup", "result": "make", "after": "offense_1.dribble" },
+        { "player": "offense_2", "type": "move", "moves": [ { "to": { "named": "right_wing" } } ] }
+      ],
+      "end_state": {
+        "offense_1": { "named": "basket" },
+        "offense_2": { "named": "right_wing" },
+        "balls": { "ball_1": { "dead": true } }
+      }
+    }
+  ]
+}
