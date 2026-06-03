@@ -1,4 +1,5 @@
 import type { Issue, Result, OcfDoc } from "./types.js";
+import { schemaLevel } from "./schema-level.js";
 
 export function assemble(issues: Issue[]): Result {
   const errors = issues.filter((i) => i.severity === "error");
@@ -16,7 +17,8 @@ export function validate(doc: OcfDoc): Result {
     throw new TypeError("validate: expected an object (parsed OCF document)");
   }
   const issues: Issue[] = [];
-  // Level 0 (schema validation) — wired in Task 4.
-  // Level 1 (semantic rules) — wired in Task 11.
+  const level0 = schemaLevel(doc);
+  if (level0.length > 0) return assemble(level0); // stop on schema/legacy failure
+  // Level 1 (semantics) appended in later tasks.
   return assemble(issues);
 }
