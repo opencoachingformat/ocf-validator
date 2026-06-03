@@ -104,7 +104,7 @@ where loose balls rest) threaded through the frame sequence.
 | `REF_ENTITY_UNKNOWN` | Every `from` / `to` / `carried_by` / `start_state` key / `end_state` key refers to an entity declared in `entities`. |
 | `REF_BALL_UNKNOWN` | Every `ball_id` (in an action or ball state) exists in `balls[]`. |
 | `REF_BRANCH_TARGET_UNKNOWN` | Every `branches[].to` points at an existing `frame.id`. |
-| `REF_NAMED_POS_UNKNOWN` | Every `{named: …}` coordinate is a known position (schema registry or document `named_positions`). |
+| `REF_NAMED_POS_UNKNOWN` | Every `{named: …}` coordinate is a known position: either in the canonical OCF catalog (`shared/named-positions.json`, mirrored from the spec's position tables — the JSON schema's `coordinate_named.named` is free-form with no enum) or declared under the document's `named_positions.custom`. |
 
 ### B) Ball-possession consistency (the core)
 
