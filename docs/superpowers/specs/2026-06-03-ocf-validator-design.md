@@ -130,7 +130,10 @@ the model design (§13) and guessing risks false positives.
 |---|---|---|
 | `END_STATE_DISAGREE` | **error** | `end_state` must agree with the explicit endpoints of the frame's actions. |
 | `START_STATE_DISCONTINUITY` | **warning** | Frame N+1 `start_state` differs from frame N `end_state` without explanation. |
-| `BRANCH_END_STATE_MISSING` | **error** | A frame with `branches` must define an `end_state` (the branch point must be pinned). |
+
+> Note: the schema makes `end_state` **required on every frame**, so a separate
+> "branch frame must have end_state" rule is redundant and is **not**
+> implemented — the schema already enforces it (`SCHEMA_INVALID`).
 
 ### D) Quality / rendering hints (warnings)
 
@@ -271,8 +274,12 @@ the conformance case records whatever code the validator actually emits:
 | `state-bad-ball-key` | `SCHEMA_INVALID` or `REF_BALL_UNKNOWN` | depends on shape |
 | `action-pass-missing-receiver` | `SCHEMA_INVALID` | Level 0 (required `to`) |
 | `action-unknown-type` | `SCHEMA_INVALID` | Level 0 (action `oneOf`) |
-| `frame-bad-branch-key` | `REF_BRANCH_TARGET_UNKNOWN` | Level 1 (rule A) |
-| `frame-missing-end-state` | `BRANCH_END_STATE_MISSING` | Level 1 (rule C) |
+| `frame-bad-branch-key` | `SCHEMA_INVALID` | Level 0 (branch outcome not in enum) |
+| `frame-missing-end-state` | `SCHEMA_INVALID` | Level 0 (`end_state` is required) |
+
+The seed fixtures turn out to be **mostly Level-0 (schema) failures** — the
+genuinely semantic rules (ball-possession, `REF_BRANCH_TARGET_UNKNOWN`,
+`REF_*`, quality warnings) need **new** fixtures, authored as part of the plan.
 
 > During implementation, each fixture is run once to record the *actual* emitted
 > code before pinning it in `cases.json`; the table above is the design intent,
