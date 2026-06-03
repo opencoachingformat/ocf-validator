@@ -1,0 +1,589 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://opencoachingformat.org/schema/v1.json",
+  "title": "Open Coaching Format",
+  "description": "Open standard for basketball drill diagrams and animations. Semantic action model.",
+  "type": "object",
+  "required": ["meta", "court", "entities", "frames"],
+
+  "definitions": {
+
+    "ruleset": {
+      "type": "string",
+      "enum": ["fiba", "nba", "ncaa", "nfhs", "custom"],
+      "description": "Basketball ruleset. Determines unit, field dimensions and named position coordinates."
+    },
+
+    "unit": {
+      "type": "string",
+      "enum": ["m", "ft"],
+      "description": "Length unit used for all coordinates in this document. Derived from ruleset unless custom."
+    },
+
+    "coordinate_free": {
+      "type": "object",
+      "description": "Absolute coordinate in court units. Origin at center of court. x: negative=viewer's left, positive=viewer's right. y: positive=frontcourt (offense basket), negative=backcourt.",
+      "required": ["x", "y"],
+      "properties": { "x": { "type": "number" }, "y": { "type": "number" } },
+      "additionalProperties": false
+    },
+
+    "coordinate_named": {
+      "type": "object",
+      "description": "Reference to a named court position resolved via the active ruleset. Custom positions use 'custom.' prefix.",
+      "required": ["named"],
+      "properties": { "named": { "type": "string" } },
+      "additionalProperties": false
+    },
+
+    "coordinate_relative": {
+      "type": "object",
+      "description": "Offset from a named court position, in court units.",
+      "required": ["relative_to", "dx", "dy"],
+      "properties": {
+        "relative_to": { "type": "string" },
+        "dx": { "type": "number" },
+        "dy": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+
+    "coordinate": {
+      "description": "A single point: absolute, named, or relative.",
+      "oneOf": [
+        { "$ref": "#/definitions/coordinate_free" },
+        { "$ref": "#/definitions/coordinate_named" },
+        { "$ref": "#/definitions/coordinate_relative" }
+      ]
+    },
+
+    "entity_ref": {
+      "type": "string",
+      "description": "Reference to a player, coach, cone or station. Format '{offense|defense}_{1-9}', 'coach', 'cone_N', 'station_N'.",
+      "pattern": "^(offense|defense)_[1-9]$|^coach$|^(cone|station)_[1-9][0-9]*$"
+    },
+
+    "ball_ref": {
+      "type": "string",
+      "description": "Reference to a ball by id, e.g. 'ball_1'.",
+      "pattern": "^ball_[1-9][0-9]*$"
+    },
+
+    "color_role": {
+      "type": "string",
+      "enum": ["offense", "defense", "black", "grey", "yellow", "green", "red", "blue", "white"],
+      "description": "Semantic color role. Resolved to hex via color_scheme."
+    },
+
+    "entity_offense": {
+      "type": "object",
+      "description": "Offensive player.",
+      "required": ["type", "nr", "x", "y"],
+      "properties": {
+        "type": { "type": "string", "const": "offense" },
+        "nr": { "type": "integer", "minimum": 1, "maximum": 9 },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "rotation": { "type": "number", "minimum": 0, "maximum": 360, "default": 0 },
+        "color": { "$ref": "#/definitions/color_role", "default": "offense" },
+        "label": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "entity_defense": {
+      "type": "object",
+      "description": "Defensive player.",
+      "required": ["type", "nr", "x", "y"],
+      "properties": {
+        "type": { "type": "string", "const": "defense" },
+        "nr": { "type": "integer", "minimum": 1, "maximum": 9 },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "rotation": { "type": "number", "minimum": 0, "maximum": 360, "default": 0 },
+        "color": { "$ref": "#/definitions/color_role", "default": "defense" },
+        "label": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "entity_coach": {
+      "type": "object",
+      "description": "Coach position marker. May carry a ball.",
+      "required": ["type", "x", "y"],
+      "properties": {
+        "type": { "type": "string", "const": "coach" },
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+
+    "entity_cone": {
+      "type": "object",
+      "description": "Training cone / marker.",
+      "required": ["type", "nr", "x", "y"],
+      "properties": {
+        "type": { "type": "string", "const": "cone" },
+        "nr": { "type": "integer", "minimum": 1 },
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+
+    "entity_station": {
+      "type": "object",
+      "description": "Numbered station for circuit training.",
+      "required": ["type", "nr", "x", "y"],
+      "properties": {
+        "type": { "type": "string", "const": "station" },
+        "nr": { "type": "integer", "minimum": 1 },
+        "label": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+
+    "entity": {
+      "description": "Any non-ball entity on the court.",
+      "oneOf": [
+        { "$ref": "#/definitions/entity_offense" },
+        { "$ref": "#/definitions/entity_defense" },
+        { "$ref": "#/definitions/entity_coach" },
+        { "$ref": "#/definitions/entity_cone" },
+        { "$ref": "#/definitions/entity_station" }
+      ]
+    },
+
+    "ball": {
+      "type": "object",
+      "description": "A ball. Holds exactly one lifecycle state: carried_by, at, or dead.",
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/definitions/ball_ref" },
+        "carried_by": { "$ref": "#/definitions/entity_ref" },
+        "at": { "$ref": "#/definitions/coordinate" },
+        "dead": { "type": "boolean", "const": true }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["carried_by"], "not": { "anyOf": [ { "required": ["at"] }, { "required": ["dead"] } ] } },
+        { "required": ["at"], "not": { "anyOf": [ { "required": ["carried_by"] }, { "required": ["dead"] } ] } },
+        { "required": ["dead"], "not": { "anyOf": [ { "required": ["carried_by"] }, { "required": ["at"] } ] } }
+      ]
+    },
+
+    "ball_state": {
+      "type": "object",
+      "description": "A ball's lifecycle state inside a frame state, keyed by ball ref. Exactly one of carried_by/at/dead.",
+      "properties": {
+        "carried_by": { "$ref": "#/definitions/entity_ref" },
+        "at": { "$ref": "#/definitions/coordinate" },
+        "dead": { "type": "boolean", "const": true }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["carried_by"], "not": { "anyOf": [ { "required": ["at"] }, { "required": ["dead"] } ] } },
+        { "required": ["at"], "not": { "anyOf": [ { "required": ["carried_by"] }, { "required": ["dead"] } ] } },
+        { "required": ["dead"], "not": { "anyOf": [ { "required": ["carried_by"] }, { "required": ["at"] } ] } }
+      ]
+    },
+
+    "state": {
+      "type": "object",
+      "description": "Positional + ball anchor. Entity refs map to a coordinate; the optional 'balls' map keys ball refs to ball states.",
+      "properties": {
+        "balls": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/definitions/ball_ref" },
+          "additionalProperties": { "$ref": "#/definitions/ball_state" }
+        }
+      },
+      "patternProperties": {
+        "^(offense|defense)_[1-9]$|^coach$|^(cone|station)_[1-9][0-9]*$": { "$ref": "#/definitions/coordinate" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_ref": {
+      "type": "string",
+      "description": "Reference to another action in the same frame: '<entity_ref>.<action_type>'.",
+      "pattern": "^((offense|defense)_[1-9]|coach|(cone|station)_[1-9][0-9]*)\\.(move|cut|screen|defend|dribble|pass|shoot|rebound|pickup)$"
+    },
+
+    "move_step": {
+      "type": "object",
+      "description": "One step in a movement sequence. Without 'to' = a move on the spot. Reference fields override the action-level ones.",
+      "properties": {
+        "variant": { "type": "string" },
+        "to": { "$ref": "#/definitions/coordinate" },
+        "around_player": { "$ref": "#/definitions/entity_ref" },
+        "off_screen_by": { "$ref": "#/definitions/entity_ref" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_move": {
+      "type": "object",
+      "required": ["player", "type", "moves"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "move" },
+        "moves": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/move_step" } },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_cut": {
+      "type": "object",
+      "required": ["player", "type", "moves"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "cut" },
+        "moves": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/move_step" } },
+        "variant": { "type": "string", "enum": ["backdoor", "give_and_go", "flash", "v_cut", "l_cut", "curl", "flare", "fade", "basket"] },
+        "around_player": { "$ref": "#/definitions/entity_ref" },
+        "off_screen_by": { "$ref": "#/definitions/entity_ref" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_screen": {
+      "type": "object",
+      "required": ["player", "type", "for_player"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "screen" },
+        "for_player": { "$ref": "#/definitions/entity_ref" },
+        "on_player": { "$ref": "#/definitions/entity_ref" },
+        "at": { "$ref": "#/definitions/coordinate" },
+        "variant": { "type": "string", "enum": ["ball_screen", "back_screen", "down_screen", "flare_screen", "cross_screen", "pin_down"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_defend": {
+      "type": "object",
+      "required": ["player", "type", "guards_player"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "defend" },
+        "guards_player": { "$ref": "#/definitions/entity_ref" },
+        "variant": { "type": "string", "enum": ["on_ball", "deny", "help", "hedge", "switch", "box_out"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_dribble": {
+      "type": "object",
+      "required": ["player", "type", "moves"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "dribble" },
+        "moves": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/move_step" } },
+        "ball_id": { "$ref": "#/definitions/ball_ref" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_pass": {
+      "type": "object",
+      "required": ["player", "type", "to_player"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "pass" },
+        "to_player": { "$ref": "#/definitions/entity_ref" },
+        "ball_id": { "$ref": "#/definitions/ball_ref" },
+        "variant": { "type": "string", "enum": ["chest", "bounce", "overhead", "lob", "baseball", "hand_off", "outlet"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_shoot": {
+      "type": "object",
+      "required": ["player", "type"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "shoot" },
+        "ball_id": { "$ref": "#/definitions/ball_ref" },
+        "variant": { "type": "string", "enum": ["jumper", "three", "layup", "floater", "dunk", "hook", "free_throw"] },
+        "result": { "type": "string", "enum": ["make", "miss"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_rebound": {
+      "type": "object",
+      "required": ["player", "type"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "rebound" },
+        "ball_id": { "$ref": "#/definitions/ball_ref" },
+        "variant": { "type": "string", "enum": ["offensive", "defensive"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action_pickup": {
+      "type": "object",
+      "required": ["player", "type", "ball_id"],
+      "properties": {
+        "player": { "$ref": "#/definitions/entity_ref" },
+        "type": { "const": "pickup" },
+        "ball_id": { "$ref": "#/definitions/ball_ref" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "after": { "$ref": "#/definitions/action_ref" },
+        "with": { "$ref": "#/definitions/action_ref" },
+        "on_catch": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "action": {
+      "description": "Any action. Discriminated by 'type'.",
+      "oneOf": [
+        { "$ref": "#/definitions/action_move" },
+        { "$ref": "#/definitions/action_cut" },
+        { "$ref": "#/definitions/action_screen" },
+        { "$ref": "#/definitions/action_defend" },
+        { "$ref": "#/definitions/action_dribble" },
+        { "$ref": "#/definitions/action_pass" },
+        { "$ref": "#/definitions/action_shoot" },
+        { "$ref": "#/definitions/action_rebound" },
+        { "$ref": "#/definitions/action_pickup" }
+      ]
+    },
+
+    "custom_position": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "color_scheme": {
+      "type": "object",
+      "description": "Hex color values for each semantic role.",
+      "properties": {
+        "offense_fill": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#003366" },
+        "offense_stroke": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#ffffff" },
+        "defense_fill": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#58001d" },
+        "defense_stroke": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#ffffff" },
+        "black": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#000000" },
+        "grey": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#7f7f7f" },
+        "yellow": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#ffff00" },
+        "green": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#7ce86a" },
+        "red": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#ff0000" },
+        "blue": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#5dd5ff" },
+        "white": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "default": "#ffffff" }
+      },
+      "additionalProperties": false
+    },
+
+    "area": {
+      "type": "object",
+      "required": ["form", "x", "y"],
+      "properties": {
+        "form": { "type": "string", "enum": ["rectangle", "ellipse", "triangle"] },
+        "color": { "$ref": "#/definitions/color_role", "default": "yellow" },
+        "opacity": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.4 },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "rotation": { "type": "number", "minimum": 0, "maximum": 360, "default": 0 },
+        "coords": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/definitions/coordinate" } }
+      },
+      "additionalProperties": false
+    },
+
+    "label": {
+      "type": "object",
+      "required": ["text", "x", "y"],
+      "properties": {
+        "text": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "color": { "$ref": "#/definitions/color_role", "default": "black" }
+      },
+      "additionalProperties": false
+    },
+
+    "outcome": {
+      "type": "string",
+      "enum": ["make", "miss", "turnover", "steal", "foul"],
+      "description": "Result that selects a branch target frame."
+    },
+
+    "frame": {
+      "type": "object",
+      "description": "A coaching phase: explicit anchors (start_state/end_state) plus semantic actions, with optional outcome branches.",
+      "required": ["id", "actions", "end_state"],
+      "properties": {
+        "id": { "type": "string", "description": "Unique frame id within the drill." },
+        "label": { "type": "string" },
+        "description": { "type": "string", "description": "Coaching instruction; LLMs should generate this." },
+        "duration_ms": { "type": "integer", "minimum": 0 },
+        "start_state": {
+          "$ref": "#/definitions/state",
+          "description": "Optional. Defaults to the previous frame's end_state."
+        },
+        "actions": {
+          "type": "array",
+          "description": "Semantic actions in this phase. May be empty.",
+          "items": { "$ref": "#/definitions/action" }
+        },
+        "end_state": {
+          "$ref": "#/definitions/state",
+          "description": "Explicit anchor at the end of the phase."
+        },
+        "branches": {
+          "type": "object",
+          "description": "Optional outcome -> target frame id. Without branches, the next frame in the array follows.",
+          "propertyNames": { "$ref": "#/definitions/outcome" },
+          "additionalProperties": { "type": "string" },
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+
+  "properties": {
+
+    "$schema": { "type": "string", "format": "uri" },
+
+    "meta": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "difficulty": { "type": "string", "enum": ["beginner", "intermediate", "advanced"] },
+        "created": { "type": "string", "format": "date-time" },
+        "modified": { "type": "string", "format": "date-time" },
+        "source_format": { "type": "string", "enum": ["fiba", "fastdraw", "open", "custom"] },
+        "source_url": { "type": "string", "format": "uri" }
+      },
+      "additionalProperties": false
+    },
+
+    "court": {
+      "type": "object",
+      "required": ["ruleset", "type"],
+      "properties": {
+        "ruleset": { "$ref": "#/definitions/ruleset" },
+        "type": { "type": "string", "enum": ["half_court", "full_court"] },
+        "drill_focus": { "type": "string", "enum": ["offense", "defense", "transition", "neutral"], "default": "offense" },
+        "wheelchair": { "type": "boolean", "default": false },
+        "custom_dimensions": {
+          "type": "object",
+          "required": ["unit", "length", "width", "basket_from_baseline", "three_point_distance", "paint_width", "paint_depth", "free_throw_distance"],
+          "properties": {
+            "unit": { "$ref": "#/definitions/unit" },
+            "length": { "type": "number" },
+            "width": { "type": "number" },
+            "basket_from_baseline": { "type": "number" },
+            "three_point_distance": { "type": "number" },
+            "paint_width": { "type": "number" },
+            "paint_depth": { "type": "number" },
+            "free_throw_distance": { "type": "number" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "color_scheme": { "$ref": "#/definitions/color_scheme" },
+
+    "named_positions": {
+      "type": "object",
+      "properties": {
+        "custom": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/custom_position" }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "entities": {
+      "type": "array",
+      "description": "All non-ball entities and their initial (frame 0) positions.",
+      "items": { "$ref": "#/definitions/entity" }
+    },
+
+    "balls": {
+      "type": "array",
+      "description": "Balls present at the start of the drill. Each holds exactly one lifecycle state.",
+      "items": { "$ref": "#/definitions/ball" }
+    },
+
+    "frames": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/frame" }
+    },
+
+    "areas": { "type": "array", "items": { "$ref": "#/definitions/area" } },
+    "labels": { "type": "array", "items": { "$ref": "#/definitions/label" } }
+  },
+
+  "additionalProperties": false,
+
+  "if": {
+    "type": "object",
+    "properties": { "court": { "type": "object", "properties": { "ruleset": { "const": "custom" } } } }
+  },
+  "then": {
+    "type": "object",
+    "properties": {
+      "court": {
+        "type": "object",
+        "required": ["custom_dimensions"]
+      }
+    }
+  }
+}
