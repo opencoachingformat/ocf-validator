@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": { "id": "00000000-0000-4000-8000-0000000000c3", "title": "low contrast color scheme" },
+  "court": { "ruleset": "fiba", "type": "half_court" },
+  "color_scheme": { "offense_fill": "#fefefe", "offense_stroke": "#ffffff" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": 0, "y": 5 }
+  ],
+  "frames": [
+    { "id": "f1",
+      "actions": [{ "player": "offense_1", "type": "cut", "moves": [{ "to": { "x": 1, "y": 1 } }] }],
+      "end_state": { "offense_1": { "x": 1, "y": 1 } } }
+  ]
+}

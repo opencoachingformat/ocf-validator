@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": { "id": "00000000-0000-4000-8000-0000000000b4", "title": "pickup of a non-loose ball" },
+  "court": { "ruleset": "fiba", "type": "half_court" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": 0, "y": 5 },
+    { "type": "offense", "nr": 2, "x": 2, "y": 5 }
+  ],
+  "balls": [{ "id": "ball_1", "carried_by": "offense_1" }],
+  "frames": [
+    { "id": "f1",
+      "actions": [{ "player": "offense_2", "type": "pickup", "ball_id": "ball_1" }],
+      "end_state": {} }
+  ]
+}
