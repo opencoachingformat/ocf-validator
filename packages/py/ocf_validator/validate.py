@@ -1,6 +1,14 @@
 import json
 
 from .codes import make_issue
+from .context import build_context
+from .possession import possession_by_frame
+from .rules import (
+    coherence_rules,
+    possession_rules,
+    quality_rules,
+    reference_rules,
+)
 from .schema_level import schema_level
 from .types import Issue, Result
 
@@ -22,8 +30,13 @@ def validate(doc) -> Result:
     level0 = schema_level(doc)
     if level0:
         return _assemble(level0)
+    ctx = build_context(doc)
+    states = possession_by_frame(doc)
     issues: list[Issue] = []
-    # Level 1 rules appended in Task 17.
+    issues.extend(reference_rules(doc, ctx))
+    issues.extend(possession_rules(doc, ctx, states))
+    issues.extend(coherence_rules(doc, ctx))
+    issues.extend(quality_rules(doc, ctx))
     return _assemble(issues)
 
 
