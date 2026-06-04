@@ -7,7 +7,7 @@ reference integrity), serving both authoring tools (LLM / editor) and the
 rendering gate.
 
 - `packages/ts` — TypeScript library + `ocf-validate` CLI (reference impl).
-- `packages/py` — Python mirror (same conformance suite). *(in progress)*
+- `packages/py` — Python mirror (same conformance suite).
 - `shared/` — language-neutral contract: model schema, error-code registry,
   named-position catalog, conformance fixtures.
 
