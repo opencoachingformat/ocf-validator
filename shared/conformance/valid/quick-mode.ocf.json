@@ -1,0 +1,40 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": {
+    "id": "b1e2d3c4-5f6a-4b7c-8d9e-0f1a2b3c4d5e",
+    "title": "Quick Sketch — Give and Go",
+    "description": "Minimal example: a coach sketches a give-and-go without any detail annotations.",
+    "author": "OCF Examples",
+    "tags": ["quick-mode", "give-and-go"],
+    "source_format": "open"
+  },
+  "court": { "ruleset": "fiba", "type": "half_court" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": -3.0, "y": 6.0 },
+    { "type": "offense", "nr": 2, "x": 3.0, "y": 6.0 }
+  ],
+  "balls": [ { "id": "ball_1", "carried_by": "offense_1" } ],
+  "frames": [
+    {
+      "id": "frame_1",
+      "actions": [
+        { "player": "offense_1", "type": "pass", "to_player": "offense_2" },
+        { "player": "offense_1", "type": "cut", "moves": [ { "to": { "named": "basket" } } ] }
+      ],
+      "end_state": {
+        "offense_1": { "named": "basket" },
+        "balls": { "ball_1": { "carried_by": "offense_2" } }
+      }
+    },
+    {
+      "id": "frame_2",
+      "actions": [
+        { "player": "offense_2", "type": "pass", "to_player": "offense_1" },
+        { "player": "offense_1", "type": "shoot" }
+      ],
+      "end_state": {
+        "balls": { "ball_1": { "dead": true } }
+      }
+    }
+  ]
+}

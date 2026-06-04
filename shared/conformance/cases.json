@@ -1,0 +1,18 @@
+{
+  "valid": [
+    { "file": "valid/pick-and-roll.ocf.json" },
+    { "file": "valid/3-man-weave.ocf.json" },
+    { "file": "valid/transition-3v2.ocf.json" },
+    { "file": "valid/quick-mode.ocf.json" }
+  ],
+  "invalid": [
+    { "file": "invalid/action-pass-missing-receiver.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/action-unknown-type.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/ball-carried-and-at.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/frame-bad-branch-key.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/frame-missing-end-state.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/state-bad-ball-key.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/sem-branch-target-missing.json", "codes": ["REF_BRANCH_TARGET_UNKNOWN"] },
+    { "file": "invalid/sem-pass-non-carrier.json", "codes": ["BALL_CARRIER_MISMATCH"] }
+  ]
+}

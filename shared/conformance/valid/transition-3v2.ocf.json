@@ -1,0 +1,87 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": {
+    "id": "c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f",
+    "title": "3v2 Transition",
+    "description": "Three offensive players attack two defenders in transition and create a quality shot through ball movement and spacing.",
+    "author": "OCF Examples",
+    "tags": ["transition", "3v2", "full-court", "offense", "intermediate"],
+    "difficulty": "intermediate",
+    "created": "2025-02-27T10:00:00Z",
+    "source_format": "open"
+  },
+  "court": { "ruleset": "fiba", "type": "full_court", "drill_focus": "transition" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": 0.0, "y": -12.0 },
+    { "type": "offense", "nr": 2, "x": -4.0, "y": -10.0 },
+    { "type": "offense", "nr": 3, "x": 4.0, "y": -10.0 },
+    { "type": "defense", "nr": 1, "x": -2.0, "y": 2.0 },
+    { "type": "defense", "nr": 2, "x": 2.0, "y": 2.0 }
+  ],
+  "balls": [ { "id": "ball_1", "carried_by": "offense_1" } ],
+  "frames": [
+    {
+      "id": "frame_1",
+      "label": "Push",
+      "description": "offense_1 pushes the ball up the middle; offense_2 and offense_3 fill the wings at full speed.",
+      "duration_ms": 2000,
+      "actions": [
+        { "player": "offense_1", "type": "dribble", "ball_id": "ball_1", "moves": [ { "variant": "speed", "to": { "x": 0.0, "y": 1.0 } } ] },
+        { "player": "offense_2", "type": "move", "moves": [ { "to": { "named": "left_wing" } } ] },
+        { "player": "offense_3", "type": "move", "moves": [ { "to": { "named": "right_wing" } } ] }
+      ],
+      "end_state": {
+        "offense_1": { "x": 0.0, "y": 1.0 },
+        "offense_2": { "named": "left_wing" },
+        "offense_3": { "named": "right_wing" },
+        "balls": { "ball_1": { "carried_by": "offense_1" } }
+      }
+    },
+    {
+      "id": "frame_2",
+      "label": "Draw and Kick",
+      "description": "offense_1 attacks defense_1 to commit the help, then kicks to offense_3 in the right corner for the shot.",
+      "duration_ms": 2000,
+      "actions": [
+        { "player": "offense_1", "type": "dribble", "ball_id": "ball_1", "moves": [ { "to": { "named": "left_elbow" }, "around_player": "defense_1" } ] },
+        { "player": "offense_3", "type": "cut", "variant": "fade", "moves": [ { "to": { "named": "right_corner" } } ] },
+        { "player": "offense_1", "type": "pass", "to_player": "offense_3", "ball_id": "ball_1", "variant": "overhead", "after": "offense_1.dribble" },
+        { "player": "offense_3", "type": "shoot", "ball_id": "ball_1", "variant": "three", "on_catch": true }
+      ],
+      "end_state": {
+        "offense_1": { "named": "left_elbow" },
+        "offense_3": { "named": "right_corner" },
+        "balls": { "ball_1": { "at": { "named": "basket" } } }
+      },
+      "branches": {
+        "make": "frame_reset",
+        "miss": "frame_oreb"
+      }
+    },
+    {
+      "id": "frame_oreb",
+      "label": "Offensive Rebound",
+      "description": "On a miss, offense_2 crashes from the left wing for the offensive rebound and finishes.",
+      "duration_ms": 1500,
+      "start_state": {
+        "offense_2": { "named": "left_wing" },
+        "balls": { "ball_1": { "at": { "named": "basket" } } }
+      },
+      "actions": [
+        { "player": "offense_2", "type": "rebound", "ball_id": "ball_1", "variant": "offensive", "tags": ["put_back"] },
+        { "player": "offense_2", "type": "shoot", "ball_id": "ball_1", "variant": "layup", "result": "make", "after": "offense_2.rebound" }
+      ],
+      "end_state": {
+        "offense_2": { "named": "basket" },
+        "balls": { "ball_1": { "dead": true } }
+      }
+    },
+    {
+      "id": "frame_reset",
+      "label": "Reset",
+      "description": "On a make, the ball is dead and the rep ends.",
+      "actions": [],
+      "end_state": { "balls": { "ball_1": { "dead": true } } }
+    }
+  ]
+}

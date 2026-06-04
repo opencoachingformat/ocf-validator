@@ -1,0 +1,79 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": {
+    "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "title": "Basic Pick & Roll",
+    "description": "Ball handler uses a ball screen at the top of the key. Screener rolls to the basket for the finish.",
+    "author": "OCF Examples",
+    "tags": ["pick-and-roll", "offense", "half-court", "2-player", "beginner"],
+    "difficulty": "beginner",
+    "created": "2025-02-27T10:00:00Z",
+    "source_format": "open"
+  },
+  "court": { "ruleset": "fiba", "type": "half_court", "drill_focus": "offense" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": 0.0, "y": 5.68 },
+    { "type": "offense", "nr": 4, "x": -2.45, "y": 8.20 },
+    { "type": "defense", "nr": 1, "x": 0.5, "y": 5.20 },
+    { "type": "defense", "nr": 4, "x": -2.80, "y": 7.80 }
+  ],
+  "balls": [ { "id": "ball_1", "carried_by": "offense_1" } ],
+  "frames": [
+    {
+      "id": "frame_1",
+      "label": "Step 1 — Screen",
+      "description": "offense_4 moves up from the left elbow to set a ball screen for offense_1 at the top of the key.",
+      "duration_ms": 1500,
+      "actions": [
+        { "player": "offense_4", "type": "screen", "for_player": "offense_1", "on_player": "defense_1", "variant": "ball_screen", "at": { "x": -0.5, "y": 6.7 } }
+      ],
+      "end_state": {
+        "offense_1": { "named": "top_of_the_key" },
+        "offense_4": { "x": -0.5, "y": 6.2 },
+        "balls": { "ball_1": { "carried_by": "offense_1" } }
+      }
+    },
+    {
+      "id": "frame_2",
+      "label": "Step 2 — Attack",
+      "description": "offense_1 uses the screen and dribbles hard left toward the elbow; offense_4 rolls to the right block.",
+      "duration_ms": 2000,
+      "actions": [
+        {
+          "player": "offense_1",
+          "type": "dribble",
+          "ball_id": "ball_1",
+          "moves": [
+            { "variant": "hesitation" },
+            { "variant": "speed", "to": { "named": "left_elbow" }, "around_player": "defense_1" }
+          ]
+        },
+        { "player": "offense_4", "type": "cut", "variant": "basket", "moves": [ { "to": { "named": "right_block" } } ], "tags": ["roll"] }
+      ],
+      "end_state": {
+        "offense_1": { "named": "left_elbow" },
+        "offense_4": { "named": "right_block" },
+        "balls": { "ball_1": { "carried_by": "offense_1" } }
+      }
+    },
+    {
+      "id": "frame_3",
+      "label": "Step 3 — Finish",
+      "description": "offense_1 throws a bounce pass to the rolling offense_4, who finishes with a layup.",
+      "duration_ms": 1500,
+      "actions": [
+        { "player": "offense_1", "type": "pass", "to_player": "offense_4", "ball_id": "ball_1", "variant": "bounce" },
+        { "player": "offense_4", "type": "shoot", "ball_id": "ball_1", "variant": "layup", "result": "make", "on_catch": true }
+      ],
+      "end_state": {
+        "offense_1": { "named": "left_elbow" },
+        "offense_4": { "named": "right_block" },
+        "balls": { "ball_1": { "dead": true } }
+      }
+    }
+  ],
+  "areas": [
+    { "form": "rectangle", "color": "yellow", "opacity": 0.2, "x": 0.0, "y": 10.5, "width": 4.9, "height": 4.0, "rotation": 0 }
+  ],
+  "labels": [ { "text": "Roll!", "x": 3.2, "y": 9.5, "color": "black" } ]
+}
