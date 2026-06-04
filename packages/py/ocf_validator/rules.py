@@ -381,18 +381,24 @@ def quality_rules(doc: dict[str, Any], ctx: DocContext) -> list[Issue]:
             issues.append(make_issue("EMPTY_FRAME", f"/frames/{fi}", {}, frame.get("id")))
 
     cs = doc.get("color_scheme")
-    if isinstance(cs, dict) and isinstance(cs.get("background"), str):
-        bg = cs["background"]
-        for role, color in cs.items():
-            if role == "background" or not isinstance(color, str):
+    if isinstance(cs, dict):
+        # No court-background color in the document (renderer-dependent); check the
+        # legibility pair that IS present: each player's number (*_stroke) on its
+        # symbol (*_fill). Spec WCAG section.
+        for fill_role, stroke_role in (
+            ("offense_fill", "offense_stroke"),
+            ("defense_fill", "defense_stroke"),
+        ):
+            fill, stroke = cs.get(fill_role), cs.get(stroke_role)
+            if not isinstance(fill, str) or not isinstance(stroke, str):
                 continue
-            ratio = _contrast(color, bg)
+            ratio = _contrast(fill, stroke)
             if ratio is not None and ratio < 4.5:
                 issues.append(
                     make_issue(
                         "CONTRAST_LOW",
-                        f"/color_scheme/{role}",
-                        {"ref": role, "ratio": f"{ratio:.2f}"},
+                        f"/color_scheme/{fill_role}",
+                        {"ref": f"{fill_role} vs {stroke_role}", "ratio": f"{ratio:.2f}"},
                     )
                 )
     return issues

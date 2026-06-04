@@ -22,12 +22,22 @@ test("an empty frame is EMPTY_FRAME", () => {
   expect(run(doc).some((i) => i.code === "EMPTY_FRAME")).toBe(true);
 });
 
-test("low-contrast color_scheme is CONTRAST_LOW", () => {
+test("low fill-vs-stroke contrast is CONTRAST_LOW", () => {
   const doc = {
     entities: [{ type: "offense", nr: 1, x: 0, y: 0 }],
     balls: [], court: { ruleset: "fiba", type: "full_court" },
-    color_scheme: { offense: "#fefefe", background: "#ffffff" },
+    color_scheme: { offense_fill: "#fefefe", offense_stroke: "#ffffff" },
     frames: [{ id: "f1", actions: [{ player: "offense_1", type: "move", moves: [] }], end_state: {} }],
   };
   expect(run(doc).some((i) => i.code === "CONTRAST_LOW")).toBe(true);
+});
+
+test("good fill-vs-stroke contrast is clean", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 0 }],
+    balls: [], court: { ruleset: "fiba", type: "full_court" },
+    color_scheme: { offense_fill: "#003366", offense_stroke: "#ffffff" },
+    frames: [{ id: "f1", actions: [{ player: "offense_1", type: "move", moves: [] }], end_state: {} }],
+  };
+  expect(run(doc).some((i) => i.code === "CONTRAST_LOW")).toBe(false);
 });

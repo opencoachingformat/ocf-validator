@@ -1,6 +1,6 @@
 from ocf_validator.context import build_context
 from ocf_validator.possession import possession_by_frame
-from ocf_validator.rules import possession_rules, reference_rules
+from ocf_validator.rules import possession_rules, quality_rules, reference_rules
 
 
 def _doc(**extra):
@@ -71,3 +71,37 @@ def test_catch_and_shoot_clean_intra_frame():
     states = possession_by_frame(doc)
     codes = {i.code for i in possession_rules(doc, ctx, states)}
     assert "BALL_CARRIER_MISMATCH" not in codes
+
+
+def test_low_fill_vs_stroke_contrast_is_contrast_low():
+    doc = _doc(
+        court={"ruleset": "fiba", "type": "full_court"},
+        color_scheme={"offense_fill": "#fefefe", "offense_stroke": "#ffffff"},
+        frames=[
+            {
+                "id": "f1",
+                "actions": [{"type": "move", "player": "offense_1", "moves": []}],
+                "end_state": {},
+            }
+        ],
+    )
+    ctx = build_context(doc)
+    codes = {i.code for i in quality_rules(doc, ctx)}
+    assert "CONTRAST_LOW" in codes
+
+
+def test_good_fill_vs_stroke_contrast_is_clean():
+    doc = _doc(
+        court={"ruleset": "fiba", "type": "full_court"},
+        color_scheme={"offense_fill": "#003366", "offense_stroke": "#ffffff"},
+        frames=[
+            {
+                "id": "f1",
+                "actions": [{"type": "move", "player": "offense_1", "moves": []}],
+                "end_state": {},
+            }
+        ],
+    )
+    ctx = build_context(doc)
+    codes = {i.code for i in quality_rules(doc, ctx)}
+    assert "CONTRAST_LOW" not in codes

@@ -55,13 +55,21 @@ export function qualityRules(doc: OcfDoc, ctx: DocContext): Issue[] {
   });
 
   const cs = (doc as { color_scheme?: Record<string, string> }).color_scheme;
-  if (cs && typeof cs.background === "string") {
-    for (const [role, color] of Object.entries(cs)) {
-      if (role === "background" || typeof color !== "string") continue;
-      const ratio = contrast(color, cs.background);
+  if (cs) {
+    // The OCF document has no court-background color (it is renderer-dependent),
+    // so we check the legibility pair that IS in the document: each player's
+    // number (drawn in *_stroke) against its symbol (*_fill). Spec §WCAG.
+    const pairs: [string, string][] = [
+      ["offense_fill", "offense_stroke"],
+      ["defense_fill", "defense_stroke"],
+    ];
+    for (const [fillRole, strokeRole] of pairs) {
+      const fill = cs[fillRole], stroke = cs[strokeRole];
+      if (typeof fill !== "string" || typeof stroke !== "string") continue;
+      const ratio = contrast(fill, stroke);
       if (ratio !== null && ratio < 4.5) {
-        issues.push(makeIssue("CONTRAST_LOW", `/color_scheme/${role}`,
-          { ref: role, ratio: ratio.toFixed(2) }));
+        issues.push(makeIssue("CONTRAST_LOW", `/color_scheme/${fillRole}`,
+          { ref: `${fillRole} vs ${strokeRole}`, ratio: ratio.toFixed(2) }));
       }
     }
   }
