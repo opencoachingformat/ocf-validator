@@ -55,7 +55,10 @@ def main(files, as_json, quiet, strict):
         if not as_json and not quiet:
             _print_human(f, res)
     if as_json:
-        click.echo(json.dumps({f: _result_to_dict(r) for f, r in results.items()}, indent=2))
+        # ensure_ascii=False so non-ASCII chars (e.g. § in spec_ref) render as
+        # themselves, byte-matching the TS CLI's --json output.
+        click.echo(json.dumps({f: _result_to_dict(r) for f, r in results.items()},
+                              indent=2, ensure_ascii=False))
     sys.exit(worst)
 
 
