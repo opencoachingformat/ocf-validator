@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": { "id": "00000000-0000-4000-8000-0000000000c1", "title": "defense carries and passes" },
+  "court": { "ruleset": "fiba", "type": "half_court" },
+  "entities": [
+    { "type": "defense", "nr": 1, "x": 0, "y": 5 },
+    { "type": "defense", "nr": 2, "x": 2, "y": 5 }
+  ],
+  "balls": [{ "id": "ball_1", "carried_by": "defense_1" }],
+  "frames": [
+    { "id": "f1",
+      "actions": [{ "player": "defense_1", "type": "pass", "to_player": "defense_2", "ball_id": "ball_1" }],
+      "end_state": { "balls": { "ball_1": { "carried_by": "defense_2" } } } }
+  ]
+}
