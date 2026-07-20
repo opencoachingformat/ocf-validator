@@ -1,0 +1,93 @@
+name: Sync schema from spec
+
+on:
+  repository_dispatch:
+    types: [spec_released]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version from dispatch payload
+        id: vars
+        env:
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          if [ -z "$VERSION" ]; then
+            echo "::error::client_payload.version is empty — refusing to sync"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      # opencoachingformat/spec has GitHub Pages disabled (has_pages: false), so a
+      # Pages URL is not a reliable source. Fetch the schema straight from the repo
+      # at the released ref via the Contents API instead — works regardless of
+      # whether Pages is ever turned on, and fails loudly (404) if the tag/ref or
+      # file path is wrong instead of silently writing an HTML 404 page as "schema".
+      - name: Fetch schema from spec repo at released ref
+        env:
+          GH_TOKEN: ${{ secrets.SPEC_REPO_TOKEN || github.token }}
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          gh api "repos/opencoachingformat/spec/contents/schema/v1.json?ref=$VERSION" \
+            --jq '.content' | base64 -d > /tmp/new-schema.json
+
+      - name: Sanity-check downloaded schema is valid JSON
+        run: |
+          python3 -c "import json; json.load(open('/tmp/new-schema.json'))" || {
+            echo "::error::downloaded schema is not valid JSON — aborting sync"
+            exit 1
+          }
+
+      - name: Diff against vendored copy
+        id: diff
+        run: |
+          if diff -q /tmp/new-schema.json shared/schema/ocf-action-v1.json > /dev/null 2>&1; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update vendored schema + provenance
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+        run: |
+          cp /tmp/new-schema.json shared/schema/ocf-action-v1.json
+          {
+            echo "# Schema provenance"
+            echo
+            echo "\`ocf-action-v1.json\` is copied verbatim from the spec repo:"
+            echo "\`opencoachingformat/spec\` -> \`schema/v1.json\` @ \`$VERSION\`."
+            echo "Synced automatically by \`.github/workflows/sync-from-spec.yml\`"
+            echo "on $(date -u +%Y-%m-%dT%H:%M:%SZ) from a \`spec_released\` dispatch event."
+            echo "Re-sync deliberately; do not hand-edit."
+          } > shared/schema/PROVENANCE.md
+
+      # No auto-merge: this only opens a PR for a human to review. Schema changes
+      # can be additive (safe) or breaking (need a validator code change), and the
+      # existing CI job (ci.yml) will run schema + conformance tests against the
+      # updated file before anyone approves the merge.
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: sync schema to ${{ steps.vars.outputs.version }}"
+          title: "chore: sync schema to ${{ steps.vars.outputs.version }}"
+          body: |
+            Automated sync from `opencoachingformat/spec` @ `${{ steps.vars.outputs.version }}`,
+            triggered by a `spec_released` repository_dispatch event.
+
+            This only updates the vendored schema copy in `shared/schema/`. CI
+            must pass before merging — please review the schema diff (in
+            particular any new `required` fields or removed enum values, which
+            would need matching validator changes) before approving.
+          branch: "auto/schema-sync-${{ steps.vars.outputs.version }}"
+          delete-branch: true
