@@ -213,6 +213,24 @@
       "pattern": "^((offense|defense)_[1-9]|coach|(cone|station)_[1-9][0-9]*)\\.(move|cut|screen|defend|dribble|pass|shoot|rebound|pickup)$"
     },
 
+    "movement_intensity": {
+      "type": "string",
+      "description": "Relative tempo over distance for move/cut/dribble. Does not imply a concrete duration — a downstream application derives timing from this plus actual player speed.",
+      "enum": ["slow", "normal", "fast", "explosive"]
+    },
+
+    "ball_intensity": {
+      "type": "string",
+      "description": "Relative ball speed for pass/shoot. Independent of the pass 'variant' (technique/flight path), e.g. variant 'lob' + intensity 'soft' are separate axes.",
+      "enum": ["soft", "normal", "hard", "bullet"]
+    },
+
+    "physicality": {
+      "type": "string",
+      "description": "Contact/collision style for screen/defend/rebound/pickup, used by a renderer to pick the right animation. Independent of intensity — no effect on distance/timing.",
+      "enum": ["passive", "normal", "aggressive", "hard"]
+    },
+
     "move_step": {
       "type": "object",
       "description": "One step in a movement sequence. Without 'to' = a move on the spot. Reference fields override the action-level ones.",
@@ -220,7 +238,8 @@
         "variant": { "type": "string" },
         "to": { "$ref": "#/definitions/coordinate" },
         "around_player": { "$ref": "#/definitions/entity_ref" },
-        "off_screen_by": { "$ref": "#/definitions/entity_ref" }
+        "off_screen_by": { "$ref": "#/definitions/entity_ref" },
+        "intensity": { "$ref": "#/definitions/movement_intensity" }
       },
       "additionalProperties": false
     },
@@ -232,6 +251,7 @@
         "player": { "$ref": "#/definitions/entity_ref" },
         "type": { "const": "move" },
         "moves": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/move_step" } },
+        "intensity": { "$ref": "#/definitions/movement_intensity" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -250,6 +270,7 @@
         "variant": { "type": "string", "enum": ["backdoor", "give_and_go", "flash", "v_cut", "l_cut", "curl", "flare", "fade", "basket"] },
         "around_player": { "$ref": "#/definitions/entity_ref" },
         "off_screen_by": { "$ref": "#/definitions/entity_ref" },
+        "intensity": { "$ref": "#/definitions/movement_intensity" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -268,6 +289,7 @@
         "on_player": { "$ref": "#/definitions/entity_ref" },
         "at": { "$ref": "#/definitions/coordinate" },
         "variant": { "type": "string", "enum": ["ball_screen", "back_screen", "down_screen", "flare_screen", "cross_screen", "pin_down"] },
+        "physicality": { "$ref": "#/definitions/physicality" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -284,6 +306,7 @@
         "type": { "const": "defend" },
         "guards_player": { "$ref": "#/definitions/entity_ref" },
         "variant": { "type": "string", "enum": ["on_ball", "deny", "help", "hedge", "switch", "box_out"] },
+        "physicality": { "$ref": "#/definitions/physicality" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -300,6 +323,7 @@
         "type": { "const": "dribble" },
         "moves": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/move_step" } },
         "ball_id": { "$ref": "#/definitions/ball_ref" },
+        "intensity": { "$ref": "#/definitions/movement_intensity" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -317,6 +341,7 @@
         "to_player": { "$ref": "#/definitions/entity_ref" },
         "ball_id": { "$ref": "#/definitions/ball_ref" },
         "variant": { "type": "string", "enum": ["chest", "bounce", "overhead", "lob", "baseball", "hand_off", "outlet"] },
+        "intensity": { "$ref": "#/definitions/ball_intensity" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -334,6 +359,7 @@
         "ball_id": { "$ref": "#/definitions/ball_ref" },
         "variant": { "type": "string", "enum": ["jumper", "three", "layup", "floater", "dunk", "hook", "free_throw"] },
         "result": { "type": "string", "enum": ["make", "miss"] },
+        "intensity": { "$ref": "#/definitions/ball_intensity" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -350,6 +376,7 @@
         "type": { "const": "rebound" },
         "ball_id": { "$ref": "#/definitions/ball_ref" },
         "variant": { "type": "string", "enum": ["offensive", "defensive"] },
+        "physicality": { "$ref": "#/definitions/physicality" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -365,6 +392,7 @@
         "player": { "$ref": "#/definitions/entity_ref" },
         "type": { "const": "pickup" },
         "ball_id": { "$ref": "#/definitions/ball_ref" },
+        "physicality": { "$ref": "#/definitions/physicality" },
         "tags": { "type": "array", "items": { "type": "string" } },
         "after": { "$ref": "#/definitions/action_ref" },
         "with": { "$ref": "#/definitions/action_ref" },
@@ -461,7 +489,7 @@
         "id": { "type": "string", "description": "Unique frame id within the drill." },
         "label": { "type": "string" },
         "description": { "type": "string", "description": "Coaching instruction; LLMs should generate this." },
-        "duration_ms": { "type": "integer", "minimum": 0 },
+        "duration_ms": { "type": "integer", "minimum": 0, "description": "Deprecated: use per-action 'intensity' instead. Suggested animation duration for the phase." },
         "start_state": {
           "$ref": "#/definitions/state",
           "description": "Optional. Defaults to the previous frame's end_state."

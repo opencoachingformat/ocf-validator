@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": { "id": "00000000-0000-4000-8000-000000000012", "title": "intensity is not a valid field on screen" },
+  "court": { "ruleset": "fiba", "type": "half_court" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": 0, "y": 5 },
+    { "type": "offense", "nr": 2, "x": 1, "y": 5 },
+    { "type": "defense", "nr": 1, "x": 0.5, "y": 5 }
+  ],
+  "frames": [
+    {
+      "id": "f1",
+      "actions": [
+        { "player": "offense_2", "type": "screen", "for_player": "offense_1", "on_player": "defense_1", "variant": "ball_screen", "at": { "x": 0.5, "y": 6 }, "intensity": "hard" }
+      ],
+      "end_state": {}
+    }
+  ]
+}

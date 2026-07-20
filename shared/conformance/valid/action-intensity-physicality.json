@@ -1,0 +1,27 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": { "id": "00000000-0000-4000-8000-000000000010", "title": "intensity and physicality fields" },
+  "court": { "ruleset": "fiba", "type": "half_court" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": 0, "y": 5 },
+    { "type": "offense", "nr": 2, "x": 1, "y": 5 },
+    { "type": "defense", "nr": 1, "x": 0.5, "y": 5 }
+  ],
+  "balls": [ { "id": "ball_1", "carried_by": "offense_1" } ],
+  "frames": [
+    {
+      "id": "f1",
+      "actions": [
+        { "player": "offense_2", "type": "screen", "for_player": "offense_1", "on_player": "defense_1", "variant": "ball_screen", "at": { "x": 0.5, "y": 6 }, "physicality": "aggressive" },
+        { "player": "offense_1", "type": "move", "moves": [ { "to": { "x": 0, "y": 6 } } ], "intensity": "explosive" },
+        { "player": "offense_1", "type": "pass", "to_player": "offense_2", "ball_id": "ball_1", "variant": "chest", "intensity": "hard" },
+        { "player": "offense_2", "type": "shoot", "ball_id": "ball_1", "variant": "layup", "result": "make", "intensity": "soft" }
+      ],
+      "end_state": {
+        "offense_1": { "x": 0, "y": 6 },
+        "offense_2": { "x": 1, "y": 5 },
+        "balls": { "ball_1": { "dead": true } }
+      }
+    }
+  ]
+}
