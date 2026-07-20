@@ -1,3 +1,2 @@
 export { validate } from "./validate.js";
-export { validateFile } from "./validate-file.js";
 export type { Issue, Result, Severity, OcfDoc } from "./types.js";

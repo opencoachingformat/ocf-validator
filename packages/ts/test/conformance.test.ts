@@ -2,7 +2,7 @@ import { test, expect, describe } from "vitest";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateFile } from "../src/validate.js";
+import { validateFile } from "../src/validate-file.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../..", "shared", "conformance");
 const cases = JSON.parse(readFileSync(join(root, "cases.json"), "utf8")) as {

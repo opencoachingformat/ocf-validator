@@ -11,6 +11,8 @@ jobs:
         with: { node-version: "20" }
       - run: npm install
       - run: npm run build
+      - name: Check browser bundle is committed and up to date
+        run: git diff --exit-code -- dist/browser
       - run: npm test
   py:
     name: Python validator

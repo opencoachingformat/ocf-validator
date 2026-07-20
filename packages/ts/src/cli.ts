@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import pc from "picocolors";
-import { validateFile } from "./validate.js";
+import { validateFile } from "./validate-file.js";
 import type { Result, Issue } from "./types.js";
 
 interface Io { log: (s: string) => void; }

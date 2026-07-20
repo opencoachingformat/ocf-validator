@@ -12,8 +12,14 @@
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git add -n:*)",
       "Bash(diff:*)",
-      "Bash(jq:*)"
+      "Bash(jq:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(echo:*)",
+      "Bash(ls:*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",

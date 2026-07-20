@@ -1,5 +1,9 @@
 node_modules/
 dist/
+!packages/ts/dist/
+packages/ts/dist/*
+!packages/ts/dist/browser/
+!packages/ts/dist/browser/**
 .venv/
 __pycache__/
 *.pyc

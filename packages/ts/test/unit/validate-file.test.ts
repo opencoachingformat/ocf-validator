@@ -2,7 +2,7 @@ import { test, expect } from "vitest";
 import { writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { validateFile } from "../../src/validate.js";
+import { validateFile } from "../../src/validate-file.js";
 
 const dir = mkdtempSync(join(tmpdir(), "ocf-"));
 
