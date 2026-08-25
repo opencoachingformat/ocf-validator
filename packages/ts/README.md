@@ -2,6 +2,10 @@
 
 Reference TypeScript validator for the Open Coaching Format.
 
+```bash
+npm install @opencoachingformat/validator
+```
+
 ```ts
 import { validate, validateFile } from "@opencoachingformat/validator";
 const res = validate(doc);   // res.valid, res.errors, res.warnings, res.summary
