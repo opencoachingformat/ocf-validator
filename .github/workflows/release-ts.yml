@@ -28,6 +28,12 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      # Trusted publishing needs npm CLI >=11.5.1. Node 22's bundled npm is
+      # only 10.9.8 (verified against a real run's logs) — actions/setup-node
+      # does NOT give us a new enough npm on its own, so upgrade explicitly.
+      - name: Upgrade npm for OIDC trusted publishing support
+        run: npm install -g npm@latest
+
       - name: Check tag matches package.json version
         env:
           VERSION: ${{ github.ref_name }}
@@ -43,11 +49,11 @@ jobs:
       - name: Check browser bundle is committed and up to date
         run: git diff --exit-code -- dist/browser
 
-      # Authenticates via OIDC trusted publishing (npm CLI >=11.5.1, bundled
-      # with actions/setup-node@v6's Node 22) — no NPM_TOKEN needed. Requires
-      # a trusted publisher already configured on the npm package pointing at
-      # this repo + this workflow file, which in turn requires the package to
-      # already exist (a one-time manual `npm publish` bootstraps it).
-      # Provenance is automatic with trusted publishing, no --provenance flag.
+      # Authenticates via OIDC trusted publishing — no NPM_TOKEN needed.
+      # Requires a trusted publisher already configured on the npm package
+      # pointing at this repo + this workflow file, which in turn requires
+      # the package to already exist (a one-time manual `npm publish`
+      # bootstraps it). Provenance is automatic with trusted publishing, no
+      # --provenance flag.
       - name: Publish to npm
         run: npm publish
