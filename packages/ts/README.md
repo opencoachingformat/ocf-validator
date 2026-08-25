@@ -1,9 +1,9 @@
-# @ocf/validator
+# @opencoachingformat/validator
 
 Reference TypeScript validator for the Open Coaching Format.
 
 ```ts
-import { validate, validateFile } from "@ocf/validator";
+import { validate, validateFile } from "@opencoachingformat/validator";
 const res = validate(doc);   // res.valid, res.errors, res.warnings, res.summary
 ```
 

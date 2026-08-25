@@ -19,7 +19,7 @@ node dist/cli.js path/to/play.ocf.json
 ```
 
 ```ts
-import { validate } from "@ocf/validator";
+import { validate } from "@opencoachingformat/validator";
 const result = validate(doc);
 if (!result.valid) console.error(result.errors);
 ```
