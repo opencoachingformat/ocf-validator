@@ -17,6 +17,7 @@
   "scripts": {
     "build": "tsup && npm run build:browser",
     "build:browser": "tsup --config tsup.browser.config.ts",
+    "prepublishOnly": "npm run build",
     "test": "vitest run",
     "test:watch": "vitest"
   },
