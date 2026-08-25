@@ -8,7 +8,7 @@ component.
 
 | Package | Distribution mechanism | Consumers |
 |---|---|---|
-| `packages/ts` | npm package (`@ocf/validator`), used as a library import or via its `bin` entry (`npx @ocf/validator`) | Node/TS/web tooling: editor, renderer, generation pipelines written in TS |
+| `packages/ts` | npm package (`@opencoachingformat/validator`), used as a library import or via its `bin` entry (`npx @opencoachingformat/validator`) | Node/TS/web tooling: editor, renderer, generation pipelines written in TS |
 | `packages/py` | Python package (`ocf_validator`), installed via `pip install -e .` in CI / `pip install ocf-validator` when published; console script `ocf-validate` | Python-based analysis/generation tooling |
 
 Both are versioned and released independently per language ecosystem
