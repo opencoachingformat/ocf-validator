@@ -8,12 +8,14 @@ component.
 
 | Package | Distribution mechanism | Consumers |
 |---|---|---|
-| `packages/ts` | npm package (`@opencoachingformat/validator`), used as a library import or via its `bin` entry (`npx @opencoachingformat/validator`) | Node/TS/web tooling: editor, renderer, generation pipelines written in TS |
+| `packages/ts` | npm package (`@opencoachingformat/validator`), used as a library import or via its `bin` entry (`npx ocf-validate`) | Node/TS/web tooling: editor, renderer, generation pipelines written in TS |
 | `packages/py` | Python package (`ocf_validator`), installed via `pip install -e .` in CI / `pip install ocf-validator` when published; console script `ocf-validate` | Python-based analysis/generation tooling |
 
-Both are versioned and released independently per language ecosystem
-convention (npm registry / PyPI), though kept in lockstep in practice since
-they share `shared/` and CI enforces conformance parity on every commit.
+`packages/ts` is published to npm on every `v*` tag (§7.2, `release-ts.yml`);
+`packages/py` is not yet published to PyPI. Both are versioned and released
+independently per language ecosystem convention, though kept in lockstep in
+practice since they share `shared/` and CI enforces conformance parity on
+every commit.
 
 ## 7.2 CI/Automation Environment
 
@@ -21,6 +23,7 @@ they share `shared/` and CI enforces conformance parity on every commit.
 |---|---|---|---|
 | `ci.yml` | `push`, `pull_request` (any branch) | `ubuntu-latest` (two parallel jobs: `ts`, `py`) | Builds and tests both packages against `shared/conformance`. This is the parity enforcement mechanism (§2, §4). |
 | `sync-from-spec.yml` | `repository_dispatch` with type `spec_released`, carrying `client_payload.version` | `ubuntu-latest` | Fetches `schema/v1.json` from `opencoachingformat/spec` at the released ref via the GitHub Contents API, diffs it against the vendored copy, and — only if changed — opens a PR updating `shared/schema/ocf-action-v1.json` + `PROVENANCE.md`. Never merges automatically; `ci.yml` still gates the resulting PR. |
+| `release-ts.yml` | `push` of a `v*` tag | `ubuntu-latest` | Verifies the tag matches `packages/ts/package.json`'s version, rebuilds (re-checking `dist/browser` is committed and up to date), then `npm publish`. Authenticates via OIDC trusted publishing — npm trusts this exact repo + workflow file combination directly, no `NPM_TOKEN` secret involved. |
 
 ## 7.3 External Dependencies at Runtime (validation time)
 
@@ -37,3 +40,8 @@ offline-capable: the schema is vendored (§2), not fetched.
 - **`repository_dispatch` webhook** — the spec repo's release automation (or
   a maintainer manually) must send this event for the sync workflow to ever
   fire; there is no polling fallback.
+- **npm registry OIDC trust** (`release-ts.yml` only) — requires a Trusted
+  Publisher configured on the `@opencoachingformat/validator` npm package
+  (npmjs.com package settings) naming this repo and `release-ts.yml`
+  explicitly; without it, `npm publish` fails even with a correctly tagged,
+  passing build.

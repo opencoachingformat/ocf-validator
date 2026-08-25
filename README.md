@@ -14,14 +14,21 @@ rendering gate.
 ## Quick start (TypeScript)
 
 ```bash
-cd packages/ts && npm install && npm run build
-node dist/cli.js path/to/play.ocf.json
+npm install @opencoachingformat/validator
+npx ocf-validate path/to/play.ocf.json
 ```
 
 ```ts
 import { validate } from "@opencoachingformat/validator";
 const result = validate(doc);
 if (!result.valid) console.error(result.errors);
+```
+
+Building from source instead (this repo, not the published package):
+
+```bash
+cd packages/ts && npm install && npm run build
+node dist/cli.js path/to/play.ocf.json
 ```
 
 See [the design doc](docs/superpowers/specs/2026-06-03-ocf-validator-design.md)
