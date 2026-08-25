@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
@@ -43,7 +43,11 @@ jobs:
       - name: Check browser bundle is committed and up to date
         run: git diff --exit-code -- dist/browser
 
+      # Authenticates via OIDC trusted publishing (npm CLI >=11.5.1, bundled
+      # with actions/setup-node@v6's Node 22) — no NPM_TOKEN needed. Requires
+      # a trusted publisher already configured on the npm package pointing at
+      # this repo + this workflow file, which in turn requires the package to
+      # already exist (a one-time manual `npm publish` bootstraps it).
+      # Provenance is automatic with trusted publishing, no --provenance flag.
       - name: Publish to npm
-        run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish
