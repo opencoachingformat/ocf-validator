@@ -10,6 +10,7 @@ Alternatives, Consequences).
 | [ADR-0001](../adr/0001-monorepo-shared-contract.md) | Use a monorepo with a language-neutral `shared/` contract (schema, error codes, conformance fixtures) rather than separate repos per language or a cross-compiled single implementation. |
 | [ADR-0002](../adr/0002-two-stage-validation.md) | Split validation into Level 0 (JSON Schema) and Level 1 (semantic rules), with Level 0 always short-circuiting Level 1 on failure, rather than running all checks together. |
 | [ADR-0003](../adr/0003-automated-schema-sync.md) | Automate schema updates from the spec repo via `repository_dispatch` + the GitHub Contents API, always landing as a human-reviewed PR — never fetched at runtime, never auto-merged. |
+| [ADR-0004](../adr/0004-auto-sync-operational-requirements.md) | Capture the operational preconditions (checkout credential handling, repo Actions write + PR-create permissions, browser-bundle rebuild) that the auto-sync depends on to open its PR end-to-end. |
 
 New architecturally significant decisions (anything that would be costly to
 reverse, or that future contributors would reasonably ask "why was it done

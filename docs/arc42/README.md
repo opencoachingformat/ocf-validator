@@ -19,8 +19,9 @@ This documents the architecture of the OCF Validator following the
 Architecture Decision Records referenced from section 9 live in
 [`docs/adr/`](../adr/).
 
-This documentation set reflects the system as of schema provenance commit
-`c1871aa` (`opencoachingformat/spec`). The prior brainstorming/design document
+This documentation set reflects the system as of the vendored schema at
+`@opencoachingformat/spec` **v1.2.0** (see `shared/schema/PROVENANCE.md` for the
+exact source ref). The prior brainstorming/design document
 at [`docs/superpowers/specs/2026-06-03-ocf-validator-design.md`](../superpowers/specs/2026-06-03-ocf-validator-design.md)
 remains as historical record of the initial design process; this arc42 set is
 the maintained, current architecture reference going forward.
