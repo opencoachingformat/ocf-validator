@@ -14,6 +14,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Avoid a persisted Authorization header lingering in git config —
+          # create-pull-request adds its own; two Authorization headers make the
+          # push fail with remote: Duplicate header: "Authorization" (400).
+          persist-credentials: false
 
       - name: Resolve version from dispatch payload
         id: vars
@@ -79,6 +84,7 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ github.token }}
           commit-message: "chore: sync schema to ${{ steps.vars.outputs.version }}"
           title: "chore: sync schema to ${{ steps.vars.outputs.version }}"
           body: |
