@@ -76,6 +76,23 @@ jobs:
             echo "Re-sync deliberately; do not hand-edit."
           } > shared/schema/PROVENANCE.md
 
+      # The committed browser bundle (packages/ts/dist/browser) embeds the
+      # schema, and ci.yml enforces it is up to date (git diff --exit-code).
+      # Rebuild it here so the auto-sync PR is green out of the box instead of
+      # failing the bundle check and needing a manual rebuild.
+      - name: Set up Node.js
+        if: steps.diff.outputs.changed == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+
+      - name: Rebuild browser bundle for the synced schema
+        if: steps.diff.outputs.changed == 'true'
+        working-directory: packages/ts
+        run: |
+          npm ci
+          npm run build
+
       # No auto-merge: this only opens a PR for a human to review. Schema changes
       # can be additive (safe) or breaking (need a validator code change), and the
       # existing CI job (ci.yml) will run schema + conformance tests against the
