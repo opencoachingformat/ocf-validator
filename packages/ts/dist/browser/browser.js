@@ -7186,6 +7186,7 @@ var import_ajv_formats = __toESM(require_dist(), 1);
 var ocf_action_v1_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
   $id: "https://opencoachingformat.org/schema/v1.json",
+  $comment: "Schema version 1.1.1. The $id stays v1 across all backwards-compatible 1.x releases; version-pinned copies live at /<version>/ocf-action-v1.json.",
   title: "Open Coaching Format",
   description: "Open standard for basketball drill diagrams and animations. Semantic action model.",
   type: "object",
