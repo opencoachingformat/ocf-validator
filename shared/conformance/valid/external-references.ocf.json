@@ -1,0 +1,49 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v1.json",
+  "meta": {
+    "id": "9f8b7c6d-5e4a-4b3c-2d1e-0f9a8b7c6d5e",
+    "title": "4-Out-1-In Variant with Lineage",
+    "description": "Starts from the 4 Out 1 In formation with a tighter big, recorded as a variant of an existing play.",
+    "author": "OCF Conformance",
+    "tags": ["external-references"],
+    "difficulty": "intermediate",
+    "created": "2026-08-26T10:00:00Z",
+    "source_format": "open",
+    "based_on_formation": {
+      "id": "4_out_1_in",
+      "title": "4 Out 1 In",
+      "source": "https://opencoachingformat.org/registry/formations/basketball-v1.json",
+      "source_version": "1.0.0",
+      "adjustments": [
+        { "entity": "offense_5", "dx": -0.5, "dy": 0.0, "note": "tighter to the block for this play" }
+      ]
+    },
+    "based_on_play": {
+      "id": "7c9e4f2a-1b3d-4a6e-8f0c-2d5e9a1b3c7f",
+      "title": "Pick the Picker BLOB",
+      "source": "https://opencoachingformat.org/playbooks/hoopsgeek-classics/index.json",
+      "relationship": "variant"
+    }
+  },
+  "court": { "ruleset": "fiba", "type": "half_court", "drill_focus": "offense" },
+  "entities": [
+    { "type": "offense", "nr": 1, "x": 0.0, "y": 5.68 },
+    { "type": "offense", "nr": 2, "x": -6.75, "y": 8.6 },
+    { "type": "offense", "nr": 3, "x": 6.75, "y": 8.6 },
+    { "type": "offense", "nr": 4, "x": -7.5, "y": 13.98 },
+    { "type": "offense", "nr": 5, "x": -0.5, "y": 10.5 }
+  ],
+  "balls": [ { "id": "ball_1", "carried_by": "offense_1" } ],
+  "frames": [
+    {
+      "id": "frame_1",
+      "label": "Set",
+      "description": "Players hold the adjusted 4 Out 1 In shape.",
+      "actions": [],
+      "end_state": {
+        "offense_1": { "named": "top_of_the_key" },
+        "offense_5": { "x": -0.5, "y": 10.5 }
+      }
+    }
+  ]
+}

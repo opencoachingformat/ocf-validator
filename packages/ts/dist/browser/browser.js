@@ -7576,6 +7576,56 @@ var ocf_action_v1_default = {
       },
       additionalProperties: false
     },
+    formation_adjustment: {
+      type: "object",
+      description: "Per-entity delta from the resolved formation position. dx/dy are in court units, anchored to that entity's registry position (not a named position, so no relative_to).",
+      required: ["entity", "dx", "dy"],
+      properties: {
+        entity: { $ref: "#/definitions/entity_ref" },
+        dx: { type: "number" },
+        dy: { type: "number" },
+        note: { type: "string" }
+      },
+      additionalProperties: false
+    },
+    based_on_formation: {
+      type: "object",
+      description: "External reference to a starting formation in a versioned registry, resolved to entities at authoring time; pure provenance thereafter. Resolve by id, never by title.",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "Stable formation id in the registry. Only field with normative meaning." },
+        title: { type: "string", description: "Human-readable label, convenience only." },
+        source: { type: "string", format: "uri", description: "Stable URI of the formation registry index. Any URI; not host-restricted." },
+        source_version: {
+          type: "string",
+          description: "SemVer of the referenced registry. Optional; when present MUST be valid SemVer.",
+          pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+        },
+        adjustments: { type: "array", items: { $ref: "#/definitions/formation_adjustment" } }
+      },
+      additionalProperties: false
+    },
+    based_on_play: {
+      type: "object",
+      description: "External reference to another play this one derives from. The referenced play is always the base; this document is the derivative. Resolve by id, never by title.",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "Stable play id in the referenced playbook index. Only field with normative meaning." },
+        title: { type: "string", description: "Human-readable label, convenience only." },
+        source: { type: "string", format: "uri", description: "Stable URI of the playbook index/manifest. Any URI; not host-restricted." },
+        source_version: {
+          type: "string",
+          description: "SemVer of the referenced playbook. Optional; when present MUST be valid SemVer.",
+          pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+        },
+        relationship: {
+          type: "string",
+          enum: ["variant", "progression", "counter"],
+          description: "How this play relates to the base. Direction is fixed: this play derives from the referenced base."
+        }
+      },
+      additionalProperties: false
+    },
     color_scheme: {
       type: "object",
       description: "Hex color values for each semantic role.",
@@ -7674,7 +7724,9 @@ var ocf_action_v1_default = {
         created: { type: "string", format: "date-time" },
         modified: { type: "string", format: "date-time" },
         source_format: { type: "string", enum: ["fiba", "fastdraw", "open", "custom"] },
-        source_url: { type: "string", format: "uri" }
+        source_url: { type: "string", format: "uri" },
+        based_on_formation: { $ref: "#/definitions/based_on_formation" },
+        based_on_play: { $ref: "#/definitions/based_on_play" }
       },
       additionalProperties: false
     },
