@@ -7186,9 +7186,9 @@ var import_ajv_formats = __toESM(require_dist(), 1);
 var ocf_action_v1_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
   $id: "https://opencoachingformat.org/schema/v1.json",
-  $comment: "Schema version 1.1.1. The $id stays v1 across all backwards-compatible 1.x releases; version-pinned copies live at /<version>/ocf-action-v1.json.",
+  $comment: "Schema version 1.2.0. The $id stays v1 across all backwards-compatible 1.x releases; version-pinned copies live at /<version>/ocf-action-v1.json.",
   title: "Open Coaching Format",
-  description: "Open standard for basketball drill diagrams and animations. Semantic action model.",
+  description: "Open standard for team-sport coaching diagrams and animations (invasion team sports; basketball first). Semantic action model.",
   type: "object",
   required: ["meta", "court", "entities", "frames"],
   definitions: {
@@ -7376,7 +7376,7 @@ var ocf_action_v1_default = {
     action_ref: {
       type: "string",
       description: "Reference to another action in the same frame: '<entity_ref>.<action_type>'.",
-      pattern: "^((offense|defense)_[1-9]|coach|(cone|station)_[1-9][0-9]*)\\.(move|cut|screen|defend|dribble|pass|shoot|rebound|pickup)$"
+      pattern: "^((offense|defense)_[1-9]|coach|(cone|station)_[1-9][0-9]*)\\.(move|cut|screen|defend|dribble|pass|shoot|rebound|pickup|tackle|clear|faceoff|check)$"
     },
     movement_intensity: {
       type: "string",
@@ -7553,6 +7553,67 @@ var ocf_action_v1_default = {
       },
       additionalProperties: false
     },
+    action_tackle: {
+      type: "object",
+      $comment: "Reserved for invasion sports (soccer/futsal/hockey). No variants defined yet; must be specified before promotion.",
+      required: ["player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "tackle" },
+        physicality: { $ref: "#/definitions/physicality" },
+        tags: { type: "array", items: { type: "string" } },
+        after: { $ref: "#/definitions/action_ref" },
+        with: { $ref: "#/definitions/action_ref" },
+        on_catch: { type: "boolean" }
+      },
+      additionalProperties: false
+    },
+    action_clear: {
+      type: "object",
+      $comment: "Reserved for invasion sports (soccer/futsal/hockey). No variants defined yet.",
+      required: ["player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "clear" },
+        ball_id: { $ref: "#/definitions/ball_ref" },
+        intensity: { $ref: "#/definitions/ball_intensity" },
+        tags: { type: "array", items: { type: "string" } },
+        after: { $ref: "#/definitions/action_ref" },
+        with: { $ref: "#/definitions/action_ref" },
+        on_catch: { type: "boolean" }
+      },
+      additionalProperties: false
+    },
+    action_faceoff: {
+      type: "object",
+      $comment: "Reserved for hockey. No variants defined yet.",
+      required: ["player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "faceoff" },
+        tags: { type: "array", items: { type: "string" } },
+        after: { $ref: "#/definitions/action_ref" },
+        with: { $ref: "#/definitions/action_ref" },
+        on_catch: { type: "boolean" }
+      },
+      additionalProperties: false
+    },
+    action_check: {
+      type: "object",
+      $comment: "Reserved for hockey. No variants defined yet.",
+      required: ["player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "check" },
+        on_player: { $ref: "#/definitions/entity_ref" },
+        physicality: { $ref: "#/definitions/physicality" },
+        tags: { type: "array", items: { type: "string" } },
+        after: { $ref: "#/definitions/action_ref" },
+        with: { $ref: "#/definitions/action_ref" },
+        on_catch: { type: "boolean" }
+      },
+      additionalProperties: false
+    },
     action: {
       description: "Any action. Discriminated by 'type'.",
       oneOf: [
@@ -7564,7 +7625,11 @@ var ocf_action_v1_default = {
         { $ref: "#/definitions/action_pass" },
         { $ref: "#/definitions/action_shoot" },
         { $ref: "#/definitions/action_rebound" },
-        { $ref: "#/definitions/action_pickup" }
+        { $ref: "#/definitions/action_pickup" },
+        { $ref: "#/definitions/action_tackle" },
+        { $ref: "#/definitions/action_clear" },
+        { $ref: "#/definitions/action_faceoff" },
+        { $ref: "#/definitions/action_check" }
       ]
     },
     custom_position: {
@@ -7712,6 +7777,12 @@ var ocf_action_v1_default = {
   },
   properties: {
     $schema: { type: "string", format: "uri" },
+    sport: {
+      type: "string",
+      enum: ["basketball", "soccer", "handball", "hockey", "futsal"],
+      default: "basketball",
+      $comment: "Optional, default basketball (back-compat). Intended to become required in v2.0.0. basketball is fully defined; soccer/handball/hockey/futsal carry provisional minimal action whitelists pending sport-expert review."
+    },
     meta: {
       type: "object",
       required: ["id", "title"],
@@ -7787,19 +7858,139 @@ var ocf_action_v1_default = {
     labels: { type: "array", items: { $ref: "#/definitions/label" } }
   },
   additionalProperties: false,
-  if: {
-    type: "object",
-    properties: { court: { type: "object", properties: { ruleset: { const: "custom" } } } }
-  },
-  then: {
-    type: "object",
-    properties: {
-      court: {
+  allOf: [
+    {
+      if: {
         type: "object",
-        required: ["custom_dimensions"]
+        properties: { court: { type: "object", properties: { ruleset: { const: "custom" } } } }
+      },
+      then: {
+        type: "object",
+        properties: { court: { type: "object", required: ["custom_dimensions"] } }
+      }
+    },
+    {
+      $comment: "sport absent OR basketball -> basketball action whitelist (default is a non-validating annotation, so absence must be handled explicitly for back-compat)",
+      if: {
+        anyOf: [
+          { not: { required: ["sport"] } },
+          { properties: { sport: { const: "basketball" } } }
+        ]
+      },
+      then: {
+        type: "object",
+        properties: {
+          frames: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                actions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: { type: { enum: ["move", "cut", "screen", "defend", "dribble", "pass", "shoot", "rebound", "pickup"] } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "soccer" } } },
+      then: {
+        type: "object",
+        properties: {
+          frames: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                actions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: { type: { enum: ["move", "pass", "shoot", "defend", "dribble", "tackle", "clear"] } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "handball" } } },
+      then: {
+        type: "object",
+        properties: {
+          frames: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                actions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: { type: { enum: ["move", "pass", "shoot", "defend", "cut", "screen", "pickup"] } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "hockey" } } },
+      then: {
+        type: "object",
+        properties: {
+          frames: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                actions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: { type: { enum: ["move", "pass", "shoot", "defend", "dribble", "clear", "faceoff", "check"] } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "futsal" } } },
+      then: {
+        type: "object",
+        properties: {
+          frames: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                actions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: { type: { enum: ["move", "pass", "shoot", "defend", "dribble", "tackle", "clear"] } }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
-  }
+  ]
 };
 
 // ../../shared/error-codes.json
