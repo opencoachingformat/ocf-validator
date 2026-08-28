@@ -127,6 +127,12 @@
       "codes": [
         "END_STATE_DISAGREE"
       ]
+    },
+    {
+      "file": "invalid/schema-major-v2.json",
+      "codes": [
+        "SCHEMA_MAJOR_UNSUPPORTED"
+      ]
     }
   ],
   "warn": [
@@ -158,6 +164,12 @@
       "file": "warn/empty-frame.json",
       "warnings": [
         "EMPTY_FRAME"
+      ]
+    },
+    {
+      "file": "warn/min-schema-newer.json",
+      "warnings": [
+        "VALIDATOR_MAYBE_OUTDATED"
       ]
     }
   ]

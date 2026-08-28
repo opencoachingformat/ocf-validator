@@ -11,7 +11,13 @@ share a runtime type) in both languages:
   "valid": false,
   "errors":   [ /* Issue[] */ ],
   "warnings": [ /* Issue[] */ ],
-  "summary": { "errors": 2, "warnings": 1 }
+  "summary": { "errors": 2, "warnings": 1 },
+  "schema": {                    // which schema version this was validated against
+    "validatedAgainst": "1.4.0",
+    "documentDeclared": "https://opencoachingformat.org/schema/v1.json",
+    "requiredByDoc": null,       // the doc's meta.min_schema_version, if any
+    "match": true
+  }
 }
 ```
 
@@ -41,6 +47,30 @@ directly rather than hardcoding severities or messages per-language. This is
 the mechanism that guarantees a `BALL_CARRIER_MISMATCH` means the same
 severity and produces the same message shape regardless of which package
 raised it.
+
+## 8.2a Schema Version Awareness
+
+Before Level 0 runs, `validate()` compares the document to the **bundled schema
+version** (read machine-readably from the schema's `x-ocf-version` keyword). Two
+version-skew situations are surfaced explicitly rather than mis-reported as
+structural errors:
+
+- **Different schema major** (the document's `$schema` points at a different
+  `vN.json` than the validator bundles): the validator refuses with
+  `SCHEMA_MAJOR_UNSUPPORTED` and does **not** run v1 schema/semantics — a v2
+  document is never silently mis-validated as v1.
+- **Newer minor required** (the document's `meta.min_schema_version` exceeds the
+  bundled version): the validator warns with `VALIDATOR_MAYBE_OUTDATED` and
+  best-effort validates against the bundled schema, so the user sees the caveat
+  instead of a misleading "unknown field" error.
+
+Every `Result` carries a `schema` block (`validatedAgainst`, `documentDeclared`,
+`requiredByDoc`, `match`) recording what was actually validated against. This
+deterministic behavior is mirrored in TS and Python for conformance parity. The
+TypeScript package additionally offers `validateAsync`, a **browser-only**
+convenience that — only in the newer-minor case — tries once to fetch the current
+schema and validate against it, falling back to the sync warning on any failure.
+Python stays synchronous and network-free; the fetch is not part of conformance.
 
 ## 8.3 Two-Level Validation (Schema, then Semantics)
 
