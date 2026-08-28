@@ -14,5 +14,7 @@
   "START_STATE_DISCONTINUITY": { "severity": "warning", "category": "coherence",      "message": "start_state for '{ref}' differs from previous frame's end_state.", "spec_ref": "design §4-C" },
   "CONTRAST_LOW":              { "severity": "warning", "category": "quality",        "message": "color_scheme {ref} contrast {ratio} is below 4.5:1 (WCAG AA).", "spec_ref": "spec §780" },
   "ENTITY_OFFCOURT":           { "severity": "warning", "category": "quality",        "message": "Coordinate ({x},{y}) lies outside the {ruleset} court.", "spec_ref": "design §4-D" },
-  "EMPTY_FRAME":               { "severity": "warning", "category": "quality",        "message": "Frame '{ref}' has no actions and no state change.", "spec_ref": "design §4-D" }
+  "EMPTY_FRAME":               { "severity": "warning", "category": "quality",        "message": "Frame '{ref}' has no actions and no state change.", "spec_ref": "design §4-D" },
+  "SCHEMA_MAJOR_UNSUPPORTED":  { "severity": "error",   "category": "schema",         "message": "Document targets schema major {declared} but this validator only supports {supported}. Validation was not run.", "spec_ref": "schema/v1.json" },
+  "VALIDATOR_MAYBE_OUTDATED":  { "severity": "warning", "category": "schema",         "message": "Document requires schema >= {required} but this validator bundles {bundled}; some errors below may be caused by an out-of-date validator.", "spec_ref": "schema/v1.json" }
 }
