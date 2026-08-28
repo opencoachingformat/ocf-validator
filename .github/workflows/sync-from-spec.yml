@@ -86,11 +86,17 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Rebuild browser bundle for the synced schema
+      # Rebuild the bundle AND bump the validator patch version. A pure schema
+      # sync (schema bytes changed, validator code unchanged) is a patch release,
+      # so we bump here and let the auto-tag-on-merge workflow publish it. If a
+      # sync ever needs a validator *code* change (new error code, breaking
+      # shape), CI surfaces that and a human cuts the non-patch release instead.
+      - name: Rebuild browser bundle + bump validator patch version
         if: steps.diff.outputs.changed == 'true'
         working-directory: packages/ts
         run: |
           npm ci
+          npm version patch --no-git-tag-version
           npm run build
 
       # No auto-merge: this only opens a PR for a human to review. Schema changes
@@ -102,15 +108,19 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ github.token }}
-          commit-message: "chore: sync schema to ${{ steps.vars.outputs.version }}"
-          title: "chore: sync schema to ${{ steps.vars.outputs.version }}"
+          commit-message: "chore: sync schema to ${{ steps.vars.outputs.version }} + bump validator patch"
+          title: "chore: sync schema to ${{ steps.vars.outputs.version }} + bump validator patch"
           body: |
             Automated sync from `opencoachingformat/spec` @ `${{ steps.vars.outputs.version }}`,
             triggered by a `spec_released` repository_dispatch event.
 
-            This only updates the vendored schema copy in `shared/schema/`. CI
-            must pass before merging — please review the schema diff (in
-            particular any new `required` fields or removed enum values, which
-            would need matching validator changes) before approving.
+            Updates the vendored schema copy in `shared/schema/`, rebuilds the
+            browser bundle, and **bumps the validator patch version** so merging
+            this PR auto-publishes a new validator release (via the
+            `auto-tag-on-sync-merge` workflow). CI must pass before merging —
+            please review the schema diff (in particular any new `required`
+            fields or removed enum values, which would need matching validator
+            code changes and therefore a deliberate non-patch release) before
+            approving.
           branch: "auto/schema-sync-${{ steps.vars.outputs.version }}"
           delete-branch: true

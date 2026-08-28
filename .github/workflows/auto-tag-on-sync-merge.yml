@@ -1,0 +1,38 @@
+name: Auto-tag on schema-sync merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    # Only when a merged PR came from an auto/schema-sync-* branch: the sync
+    # workflow already bumped packages/ts/package.json to a fresh patch version.
+    # head.ref is used only in this expression context (not a shell), so it is
+    # not an injection vector.
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'auto/schema-sync-')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Tag the merged validator version
+        run: |
+          VERSION="v$(node -p "require('./packages/ts/package.json').version")"
+          if git rev-parse -q --verify "refs/tags/$VERSION"; then
+            echo "Tag $VERSION already exists; skipping."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VERSION" -m "$VERSION — auto-republish (schema sync)"
+          git push origin "$VERSION"
+          echo "Pushed tag $VERSION; release-ts.yml will publish it to npm."
