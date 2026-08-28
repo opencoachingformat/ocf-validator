@@ -1,7 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://opencoachingformat.org/schema/v1.json",
-  "$comment": "Schema version 1.3.0. The $id stays v1 across all backwards-compatible 1.x releases; version-pinned copies live at /<version>/ocf-action-v1.json.",
+  "$comment": "Schema version 1.4.0. The $id stays v1 across all backwards-compatible 1.x releases; version-pinned copies live at /<version>/ocf-action-v1.json.",
+  "x-ocf-version": "1.4.0",
   "title": "Open Coaching Format",
   "description": "Open standard for team-sport coaching diagrams and animations (invasion team sports; basketball first). Semantic action model.",
   "type": "object",
@@ -668,7 +669,12 @@
         "source_format": { "type": "string", "enum": ["fiba", "fastdraw", "open", "custom"] },
         "source_url": { "type": "string", "format": "uri" },
         "based_on_formation": { "$ref": "#/definitions/based_on_formation" },
-        "based_on_play": { "$ref": "#/definitions/based_on_play" }
+        "based_on_play": { "$ref": "#/definitions/based_on_play" },
+        "min_schema_version": {
+          "type": "string",
+          "description": "Minimum OCF schema version required to validate this document correctly. Optional; when present MUST be valid SemVer. A validator whose bundled schema is older SHOULD warn that it may be out of date rather than treat unknown newer fields as errors.",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+        }
       },
       "additionalProperties": false
     },
