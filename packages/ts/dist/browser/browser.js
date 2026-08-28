@@ -7186,7 +7186,7 @@ var import_ajv_formats = __toESM(require_dist(), 1);
 var ocf_action_v1_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
   $id: "https://opencoachingformat.org/schema/v1.json",
-  $comment: "Schema version 1.2.0. The $id stays v1 across all backwards-compatible 1.x releases; version-pinned copies live at /<version>/ocf-action-v1.json.",
+  $comment: "Schema version 1.3.0. The $id stays v1 across all backwards-compatible 1.x releases; version-pinned copies live at /<version>/ocf-action-v1.json.",
   title: "Open Coaching Format",
   description: "Open standard for team-sport coaching diagrams and animations (invasion team sports; basketball first). Semantic action model.",
   type: "object",
@@ -7401,7 +7401,9 @@ var ocf_action_v1_default = {
         to: { $ref: "#/definitions/coordinate" },
         around_player: { $ref: "#/definitions/entity_ref" },
         off_screen_by: { $ref: "#/definitions/entity_ref" },
-        intensity: { $ref: "#/definitions/movement_intensity" }
+        intensity: { $ref: "#/definitions/movement_intensity" },
+        side: { type: "string", enum: ["left", "right"], description: "Which side to pass an around_player obstacle on, relative to the moving player's direction of travel. Optional; renderer chooses when absent." },
+        arc: { type: "string", enum: ["tight", "normal", "wide"], description: "How closely the path wraps an around_player obstacle: tight (curl), normal, wide (flare). Optional; renderer default when absent." }
       },
       additionalProperties: false
     },
@@ -7430,6 +7432,8 @@ var ocf_action_v1_default = {
         variant: { type: "string", enum: ["backdoor", "give_and_go", "flash", "v_cut", "l_cut", "curl", "flare", "fade", "basket"] },
         around_player: { $ref: "#/definitions/entity_ref" },
         off_screen_by: { $ref: "#/definitions/entity_ref" },
+        side: { type: "string", enum: ["left", "right"], description: "Default side for this cut's around_player steps; overridden per move_step." },
+        arc: { type: "string", enum: ["tight", "normal", "wide"], description: "Default arc for this cut's around_player steps; overridden per move_step." },
         intensity: { $ref: "#/definitions/movement_intensity" },
         tags: { type: "array", items: { type: "string" } },
         after: { $ref: "#/definitions/action_ref" },
