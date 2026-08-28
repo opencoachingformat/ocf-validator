@@ -21,3 +21,4 @@ class Result:
     errors: list[Issue]
     warnings: list[Issue]
     summary: dict[str, int]
+    schema: dict[str, Any] | None = None
