@@ -2,6 +2,16 @@
   "name": "@opencoachingformat/validator",
   "version": "0.1.1",
   "description": "Reference validator for the Open Coaching Format",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opencoachingformat/ocf-validator.git",
+    "directory": "packages/ts"
+  },
+  "homepage": "https://opencoachingformat.org",
+  "bugs": {
+    "url": "https://github.com/opencoachingformat/ocf-validator/issues"
+  },
+  "license": "CC-BY-4.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
