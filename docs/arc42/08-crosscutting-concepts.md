@@ -11,7 +11,13 @@ share a runtime type) in both languages:
   "valid": false,
   "errors":   [ /* Issue[] */ ],
   "warnings": [ /* Issue[] */ ],
-  "summary": { "errors": 2, "warnings": 1 }
+  "summary": { "errors": 2, "warnings": 1 },
+  "schema": {                    // which schema version this was validated against
+    "validatedAgainst": "1.4.0",
+    "documentDeclared": "https://opencoachingformat.org/schema/v1.json",
+    "requiredByDoc": null,       // the doc's meta.min_schema_version, if any
+    "match": true
+  }
 }
 ```
 
