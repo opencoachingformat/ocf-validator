@@ -1873,13 +1873,13 @@ var require_keyword = __commonJS({
             modifyData(cxt);
           reportErrs(() => cxt.error());
         } else {
-          const ruleErrs = def.async ? validateAsync() : validateSync();
+          const ruleErrs = def.async ? validateAsync2() : validateSync();
           if (def.modifying)
             modifyData(cxt);
           reportErrs(() => addErrs(cxt, ruleErrs));
         }
       }
-      function validateAsync() {
+      function validateAsync2() {
         const ruleErrs = gen.let("ruleErrs", null);
         gen.try(() => assignValid((0, codegen_1._)`await `), (e) => gen.assign(valid, false).if((0, codegen_1._)`${e} instanceof ${it.ValidationError}`, () => gen.assign(ruleErrs, (0, codegen_1._)`${e}.errors`), () => gen.throw(e)));
         return ruleErrs;
@@ -4320,7 +4320,7 @@ var require_core = __commonJS({
         uriResolver
       };
     }
-    var Ajv2 = class {
+    var Ajv3 = class {
       constructor(opts = {}) {
         this.schemas = {};
         this.refs = {};
@@ -4690,9 +4690,9 @@ var require_core = __commonJS({
         }
       }
     };
-    Ajv2.ValidationError = validation_error_1.default;
-    Ajv2.MissingRefError = ref_error_1.default;
-    exports.default = Ajv2;
+    Ajv3.ValidationError = validation_error_1.default;
+    Ajv3.MissingRefError = ref_error_1.default;
+    exports.default = Ajv3;
     function checkOptions(checkOpts, options, msg, log = "error") {
       for (const key in checkOpts) {
         const opt = key;
@@ -6803,7 +6803,7 @@ var require_ajv = __commonJS({
     var draft7MetaSchema = require_json_schema_draft_07();
     var META_SUPPORT_DATA = ["/properties"];
     var META_SCHEMA_ID = "http://json-schema.org/draft-07/schema";
-    var Ajv2 = class extends core_1.default {
+    var Ajv3 = class extends core_1.default {
       _addVocabularies() {
         super._addVocabularies();
         draft7_1.default.forEach((v) => this.addVocabulary(v));
@@ -6822,11 +6822,11 @@ var require_ajv = __commonJS({
         return this.opts.defaultMeta = super.defaultMeta() || (this.getSchema(META_SCHEMA_ID) ? META_SCHEMA_ID : void 0);
       }
     };
-    exports.Ajv = Ajv2;
-    module.exports = exports = Ajv2;
-    module.exports.Ajv = Ajv2;
+    exports.Ajv = Ajv3;
+    module.exports = exports = Ajv3;
+    module.exports.Ajv = Ajv3;
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = Ajv2;
+    exports.default = Ajv3;
     var validate_1 = require_validate();
     Object.defineProperty(exports, "KeywordCxt", { enumerable: true, get: function() {
       return validate_1.KeywordCxt;
@@ -7148,12 +7148,12 @@ var require_dist = __commonJS({
     var fastName = new codegen_1.Name("fastFormats");
     var formatsPlugin = (ajv2, opts = { keywords: true }) => {
       if (Array.isArray(opts)) {
-        addFormats2(ajv2, opts, formats_1.fullFormats, fullName);
+        addFormats3(ajv2, opts, formats_1.fullFormats, fullName);
         return ajv2;
       }
       const [formats, exportName] = opts.mode === "fast" ? [formats_1.fastFormats, fastName] : [formats_1.fullFormats, fullName];
       const list = opts.formats || formats_1.formatNames;
-      addFormats2(ajv2, list, formats, exportName);
+      addFormats3(ajv2, list, formats, exportName);
       if (opts.keywords)
         (0, limit_1.default)(ajv2);
       return ajv2;
@@ -7165,7 +7165,7 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats2(ajv2, list, fs, exportName) {
+    function addFormats3(ajv2, list, fs, exportName) {
       var _a;
       var _b;
       (_a = (_b = ajv2.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
@@ -8020,7 +8020,9 @@ var error_codes_default = {
   START_STATE_DISCONTINUITY: { severity: "warning", category: "coherence", message: "start_state for '{ref}' differs from previous frame's end_state.", spec_ref: "design \xA74-C" },
   CONTRAST_LOW: { severity: "warning", category: "quality", message: "color_scheme {ref} contrast {ratio} is below 4.5:1 (WCAG AA).", spec_ref: "spec \xA7780" },
   ENTITY_OFFCOURT: { severity: "warning", category: "quality", message: "Coordinate ({x},{y}) lies outside the {ruleset} court.", spec_ref: "design \xA74-D" },
-  EMPTY_FRAME: { severity: "warning", category: "quality", message: "Frame '{ref}' has no actions and no state change.", spec_ref: "design \xA74-D" }
+  EMPTY_FRAME: { severity: "warning", category: "quality", message: "Frame '{ref}' has no actions and no state change.", spec_ref: "design \xA74-D" },
+  SCHEMA_MAJOR_UNSUPPORTED: { severity: "error", category: "schema", message: "Document targets schema major {declared} but this validator only supports {supported}. Validation was not run.", spec_ref: "schema/v1.json" },
+  VALIDATOR_MAYBE_OUTDATED: { severity: "warning", category: "schema", message: "Document requires schema >= {required} but this validator bundles {bundled}; some errors below may be caused by an out-of-date validator.", spec_ref: "schema/v1.json" }
 };
 
 // src/codes.ts
@@ -8470,24 +8472,78 @@ function qualityRules(doc, ctx) {
   return issues;
 }
 
+// src/schema-version.ts
+var CANONICAL_ID = "https://opencoachingformat.org/schema/v1.json";
+var rawVersion = ocf_action_v1_default["x-ocf-version"];
+var bundledSchemaInfo = {
+  version: typeof rawVersion === "string" ? rawVersion : "0.0.0",
+  major: "v" + (typeof rawVersion === "string" ? rawVersion.split(".")[0] : "0"),
+  id: ocf_action_v1_default["$id"] ?? CANONICAL_ID
+};
+function parseMajor(schemaUrl) {
+  if (typeof schemaUrl !== "string") return null;
+  const m = schemaUrl.match(/\/schema\/(v\d+)\.json/);
+  return m ? m[1] : null;
+}
+function cmpSemver(a, b) {
+  const pa = a.split(".").map((n) => parseInt(n, 10));
+  const pb = b.split(".").map((n) => parseInt(n, 10));
+  for (let i = 0; i < 3; i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+function schemaCheck(doc, validatedAgainst = bundledSchemaInfo.version) {
+  const declared = doc.$schema ?? null;
+  const declaredMajor = parseMajor(declared ?? void 0);
+  const majorUnsupported = declaredMajor !== null && declaredMajor !== bundledSchemaInfo.major;
+  const meta = doc.meta;
+  const requiredByDoc = typeof meta?.min_schema_version === "string" ? meta.min_schema_version : null;
+  const outdated = requiredByDoc !== null && cmpSemver(requiredByDoc, validatedAgainst) > 0;
+  const match = !majorUnsupported && !outdated;
+  return {
+    majorUnsupported,
+    declaredMajor,
+    outdated,
+    block: { validatedAgainst, documentDeclared: declared, requiredByDoc, match }
+  };
+}
+
 // src/validate.ts
-function assemble(issues) {
+function assemble(issues, schema) {
   const errors = issues.filter((i) => i.severity === "error");
   const warnings = issues.filter((i) => i.severity === "warning");
   return {
     valid: errors.length === 0,
     errors,
     warnings,
-    summary: { errors: errors.length, warnings: warnings.length }
+    summary: { errors: errors.length, warnings: warnings.length },
+    schema
   };
 }
 function validate(doc) {
   if (typeof doc !== "object" || doc === null || Array.isArray(doc)) {
     throw new TypeError("validate: expected an object (parsed OCF document)");
   }
+  const check = schemaCheck(doc);
+  if (check.majorUnsupported) {
+    return assemble([
+      makeIssue("SCHEMA_MAJOR_UNSUPPORTED", "/$schema", {
+        declared: check.declaredMajor,
+        supported: bundledSchemaInfo.major
+      })
+    ], check.block);
+  }
   const issues = [];
+  if (check.outdated) {
+    issues.push(makeIssue("VALIDATOR_MAYBE_OUTDATED", "/meta/min_schema_version", {
+      required: check.block.requiredByDoc,
+      bundled: check.block.validatedAgainst
+    }));
+  }
   const level0 = schemaLevel(doc);
-  if (level0.length > 0) return assemble(level0);
+  if (level0.length > 0) return assemble([...issues, ...level0], check.block);
   const ctx = buildContext(doc);
   const states = possessionByFrame(doc);
   issues.push(
@@ -8496,8 +8552,57 @@ function validate(doc) {
     ...coherenceRules(doc, ctx),
     ...qualityRules(doc, ctx)
   );
-  return assemble(issues);
+  return assemble(issues, check.block);
+}
+
+// src/validate-async.ts
+var import_ajv2 = __toESM(require_ajv(), 1);
+var import_ajv_formats2 = __toESM(require_dist(), 1);
+async function validateAsync(doc, opts = {}) {
+  const { fetchLatestSchema = true, fetchImpl } = opts;
+  const pre = schemaCheck(doc);
+  if (!fetchLatestSchema || pre.majorUnsupported || !pre.outdated) {
+    return validate(doc);
+  }
+  const declared = doc.$schema;
+  const url = declared ?? bundledSchemaInfo.id;
+  const doFetch = fetchImpl ?? (typeof fetch !== "undefined" ? fetch : void 0);
+  if (!doFetch) return validate(doc);
+  try {
+    const resp = await doFetch(url);
+    if (!resp.ok) return validate(doc);
+    const fetched = await resp.json();
+    const fetchedVersion = typeof fetched["x-ocf-version"] === "string" ? fetched["x-ocf-version"] : bundledSchemaInfo.version;
+    const ajv2 = new import_ajv2.default({ allErrors: true, strictSchema: false, strictRequired: false });
+    (0, import_ajv_formats2.default)(ajv2);
+    const validateFetched = ajv2.compile(fetched);
+    const check = schemaCheck(doc, fetchedVersion);
+    if (validateFetched(doc)) {
+      const res = validate(doc);
+      const warnings = res.warnings.filter((w) => w.code !== "VALIDATOR_MAYBE_OUTDATED");
+      return {
+        ...res,
+        warnings,
+        summary: { errors: res.errors.length, warnings: warnings.length },
+        schema: check.block
+      };
+    }
+    const errors = (validateFetched.errors ?? []).map((e) => makeIssue("SCHEMA_INVALID", e.instancePath || "/", {
+      detail: `${e.instancePath || "(root)"} ${e.message ?? ""}`.trim()
+    }));
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings: [],
+      summary: { errors: errors.length, warnings: 0 },
+      schema: check.block
+    };
+  } catch {
+    return validate(doc);
+  }
 }
 export {
-  validate
+  bundledSchemaInfo,
+  validate,
+  validateAsync
 };
