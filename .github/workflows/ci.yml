@@ -1,5 +1,9 @@
 name: CI
 on: [push, pull_request]
+
+# Least-privilege: both jobs only check out, build, and test — read is enough.
+permissions:
+  contents: read
 jobs:
   ts:
     name: TypeScript validator
