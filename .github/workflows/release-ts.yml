@@ -57,3 +57,18 @@ jobs:
       # --provenance flag.
       - name: Publish to npm
         run: npm publish
+
+      # After a successful publish, tell the spec site to bump its pinned
+      # validator version and open a PR. Requires an OCF_SITE_DISPATCH_TOKEN
+      # secret (contents:write + pull-requests:write on opencoachingformat/spec).
+      # Guarded so a release still succeeds if the secret is absent.
+      - name: Notify spec site to bump the validator pin
+        env:
+          SITE_TOKEN: ${{ secrets.OCF_SITE_DISPATCH_TOKEN }}
+        if: ${{ env.SITE_TOKEN != '' }}
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.OCF_SITE_DISPATCH_TOKEN }}
+          repository: opencoachingformat/spec
+          event-type: validator_released
+          client-payload: '{"version": "${{ github.ref_name }}"}'
