@@ -1,6 +1,6 @@
-from ocf_validator.context import build_context
-from ocf_validator.possession import possession_by_frame
-from ocf_validator.rules import possession_rules, quality_rules, reference_rules
+from ocf_validator.v1.context import build_context
+from ocf_validator.v1.possession import possession_by_frame
+from ocf_validator.v1.rules import possession_rules, quality_rules, reference_rules
 
 
 def _doc(**extra):

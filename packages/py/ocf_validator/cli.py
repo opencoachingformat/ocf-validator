@@ -4,7 +4,7 @@ import sys
 import click
 
 from .types import Issue, Result
-from .validate import validate_file
+from .v1.validate import validate_file
 
 
 def _issue_to_dict(i: Issue) -> dict:

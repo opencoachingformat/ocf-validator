@@ -1,6 +1,6 @@
 import json
 
-from .codes import make_issue
+from ..codes import make_issue
 from .context import build_context
 from .possession import possession_by_frame
 from .rules import (
@@ -9,9 +9,9 @@ from .rules import (
     quality_rules,
     reference_rules,
 )
-from .schema_level import schema_level
-from .schema_version import BUNDLED_MAJOR, effective_major_of, schema_check
-from .types import Issue, Result
+from ..schema_level import schema_level
+from ..schema_version import BUNDLED_MAJOR, effective_major_of, schema_check
+from ..types import Issue, Result
 
 
 def _assemble(issues: list[Issue], schema_block: dict | None = None) -> Result:

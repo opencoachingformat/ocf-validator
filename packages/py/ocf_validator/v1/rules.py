@@ -1,10 +1,10 @@
 from typing import Any
 
-from .codes import make_issue
+from ..codes import make_issue
 from .context import DocContext, get_frames
-from .named_positions import known_named
+from ..named_positions import known_named
 from .possession import FrameState
-from .types import Issue
+from ..types import Issue
 
 # ----------------------------------------------------------------------------
 # Reference-integrity rules
