@@ -5,6 +5,8 @@
   "REF_ENTITY_UNKNOWN":        { "severity": "error",   "category": "reference",      "message": "References unknown entity '{ref}'.", "spec_ref": "design §4-A" },
   "REF_BALL_UNKNOWN":          { "severity": "error",   "category": "reference",      "message": "References unknown ball '{ref}'.", "spec_ref": "design §4-A" },
   "REF_BRANCH_TARGET_UNKNOWN": { "severity": "error",   "category": "reference",      "message": "Branch outcome '{outcome}' targets unknown frame '{ref}'.", "spec_ref": "design §4-A" },
+  "REF_TRIGGER_ACTION_UNKNOWN":{ "severity": "error",   "category": "reference",      "message": "trigger references unknown action '{ref}'.", "spec_ref": "frameless-action-model-design §Action Identity and Ordering" },
+  "REF_BRANCH_ON_UNKNOWN":     { "severity": "error",   "category": "reference",      "message": "branch 'on' references unknown action '{ref}'.", "spec_ref": "frameless-action-model-design §Branching" },
   "REF_NAMED_POS_UNKNOWN":     { "severity": "error",   "category": "reference",      "message": "Unknown named position '{ref}'.", "spec_ref": "design §4-A" },
   "BALL_CARRIER_MISMATCH":     { "severity": "error",   "category": "ball-possession","message": "Player '{player}' performs {action} but does not carry ball '{ball_id}'.", "spec_ref": "design §4-B" },
   "BALL_NOT_AT_LOCATION":      { "severity": "error",   "category": "ball-possession","message": "Player '{player}' performs {action} but no ball is available to pick up.", "spec_ref": "design §4-B" },
