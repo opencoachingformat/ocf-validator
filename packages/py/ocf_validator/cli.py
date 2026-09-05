@@ -3,8 +3,8 @@ import sys
 
 import click
 
+from . import validate_file
 from .types import Issue, Result
-from .v1.validate import validate_file
 
 
 def _issue_to_dict(i: Issue) -> dict:

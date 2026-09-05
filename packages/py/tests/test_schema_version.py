@@ -1,4 +1,4 @@
-from ocf_validator.v1.validate import validate
+from ocf_validator import validate
 from ocf_validator.schema_version import bundled_schema_info_for
 
 BASE = {
