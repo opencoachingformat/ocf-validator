@@ -1651,7 +1651,7 @@ git commit -m "feat(ts): v2 possession rules (running carrier state, branch-case
 
 - [ ] **Step 1: Write the failing tests**
 
-Create `packages/py/tests/v2/test_possession_rules.py` — mirror every test from Task 10 Step 1 exactly, translated to pytest/dict syntax (same 6 test cases: carrier-move-flagged, non-carrier-move-allowed, pass-then-dribble-by-new-carrier, pass-by-non-carrier-flagged, two-ball-dribble-not-flagged, branch-case-state-forking). Use `from ocf_validator.v2.possession_rules import possession_rules_v2` and `from ocf_validator.v2.context import build_context_v2`.
+Create `packages/py/tests/v2/test_possession_rules.py` — mirror every test in the FINAL, current state of `packages/ts/test/unit/v2/possession.test.ts` (not just the plan's original inline draft above — that file has since grown from 6 to 10 tests across commits `4109199` and `5a01e7b`: the original 6, plus `BALL_AMBIGUOUS`, a doubly-nested branch-forking test, a successful-pickup test, and a two-balls-held-by-different-players test), translated to pytest/dict syntax. Use `from ocf_validator.v2.possession_rules import possession_rules_v2` and `from ocf_validator.v2.context import build_context_v2`. Read the actual current TS test file before writing the Python one — do not work from this plan document's original 6-test description alone.
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -1663,7 +1663,7 @@ Expected: FAIL — module doesn't exist.
 
 - [ ] **Step 3: Write `packages/py/ocf_validator/v2/possession_rules.py`**
 
-Direct Python translation of Task 10 Step 3's TypeScript, following the same structure (`_resolve_ball_ids`, `_player_holds_any_ball`, `_apply_effect`, `possession_rules_v2` with a nested `_check_and_apply` closure that forks `carrier`/`loose` per branch case via `dict(carrier)`/`set(loose)` copies). Apply the SAME `BALL_AMBIGUOUS` decision made in Task 10 Step 3 (port it if TS did; skip if TS didn't) — keep both languages' behavior identical.
+Direct Python translation of the FINAL, current `packages/ts/src/v2/rules/possession.ts` (post `4109199` and `5a01e7b` — read the actual file, not this plan's original draft), following the same structure (`_resolve_ball_ids`, `_player_holds_any_ball`, `_apply_effect`, `possession_rules_v2` with a nested `_check_and_apply` closure that forks `carrier`/`loose` per branch case via `dict(carrier)`/`set(loose)` copies). Port `BALL_AMBIGUOUS` (TS ported it, after confirming `ball_id` is optional on all 3 `BALL_DEPENDENT` action types in the real schema — this is settled, do not re-derive). Also port the documenting comment explaining why `screen`/`defend`/`tackle`/`faceoff`/`check` (and specifically `action_clear`, which has a `ball_id` but is schema-`$comment`-flagged "Reserved for invasion sports... No variants defined yet") are intentionally left untracked — keep both languages' behavior AND documentation identical.
 
 - [ ] **Step 4: Run test to verify it passes**
 
