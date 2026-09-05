@@ -74,6 +74,30 @@ test("flags an action referencing an unknown ball_id", () => {
   expect(issues.some((i) => i.code === "REF_BALL_UNKNOWN")).toBe(true);
 });
 
+test("flags an unknown around_player inside a move_step (not just on the action itself)", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
+    actions: [
+      { id: "a1", player: "offense_1", type: "dribble", ball_id: "ball_1",
+        moves: [{ to: { x: 1, y: 1 }, around_player: "offense_9" }] },
+    ],
+  };
+  const issues = referenceRulesV2(doc, ctxFor(doc));
+  expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN" && i.path.includes("around_player"))).toBe(true);
+});
+
+test("accepts a known around_player inside a move_step", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }, { type: "defense", nr: 1, x: 0, y: 6 }],
+    actions: [
+      { id: "a1", player: "offense_1", type: "dribble", ball_id: "ball_1",
+        moves: [{ to: { x: 1, y: 1 }, around_player: "defense_1" }] },
+    ],
+  };
+  const issues = referenceRulesV2(doc, ctxFor(doc));
+  expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN")).toBe(false);
+});
+
 test("checks reference integrity inside nested branch case actions too", () => {
   const doc = {
     entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
