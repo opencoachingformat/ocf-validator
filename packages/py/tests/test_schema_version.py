@@ -1,4 +1,5 @@
 from ocf_validator.validate import validate
+from ocf_validator.schema_version import bundled_schema_info_for
 
 BASE = {
     "$schema": "https://opencoachingformat.org/schema/v1.json",
@@ -20,7 +21,7 @@ def test_schema_block_present_and_matches():
 
 
 def test_different_major_rejected_without_cascade():
-    doc = {**BASE, "$schema": "https://opencoachingformat.org/schema/v2.json"}
+    doc = {**BASE, "$schema": "https://opencoachingformat.org/schema/v3.json"}
     res = validate(doc)
     assert res.valid is False
     assert any(e.code == "SCHEMA_MAJOR_UNSUPPORTED" for e in res.errors)
@@ -32,3 +33,14 @@ def test_newer_minor_warns_but_validates():
     res = validate(doc)
     assert any(w.code == "VALIDATOR_MAYBE_OUTDATED" for w in res.warnings)
     assert res.schema["requiredByDoc"] == "9.9.9"
+
+
+def test_bundled_schema_info_for_v2_reports_major_v2():
+    info = bundled_schema_info_for("v2")
+    assert info["major"] == "v2"
+    assert info["id"] == "https://opencoachingformat.org/schema/v2.json"
+
+
+def test_bundled_schema_info_for_v1_unchanged():
+    info = bundled_schema_info_for("v1")
+    assert info["major"] == "v1"

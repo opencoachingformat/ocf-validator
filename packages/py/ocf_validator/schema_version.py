@@ -2,20 +2,42 @@ import json
 import re
 from pathlib import Path
 
-_SCHEMA = json.loads(
-    (
-        Path(__file__).resolve().parents[3]
-        / "shared"
-        / "schema"
-        / "ocf-action-v1.json"
-    ).read_text()
-)
-_CANONICAL_ID = "https://opencoachingformat.org/schema/v1.json"
+_SHARED_SCHEMA_DIR = Path(__file__).resolve().parents[3] / "shared" / "schema"
 
-_raw_version = _SCHEMA.get("x-ocf-version")
-BUNDLED_VERSION = _raw_version if isinstance(_raw_version, str) else "0.0.0"
-BUNDLED_MAJOR = "v" + (BUNDLED_VERSION.split(".")[0] if isinstance(_raw_version, str) else "0")
-BUNDLED_ID = _SCHEMA.get("$id", _CANONICAL_ID)
+_CANONICAL_ID = {
+    "v1": "https://opencoachingformat.org/schema/v1.json",
+    "v2": "https://opencoachingformat.org/schema/v2.json",
+}
+
+_SCHEMA_FILE = {
+    "v1": "ocf-action-v1.json",
+    "v2": "ocf-action-v2.json",
+}
+
+
+def _load_info(major: str) -> dict:
+    schema = json.loads((_SHARED_SCHEMA_DIR / _SCHEMA_FILE[major]).read_text())
+    raw_version = schema.get("x-ocf-version")
+    version = raw_version if isinstance(raw_version, str) else "0.0.0"
+    return {
+        "version": version,
+        "major": "v" + version.split(".")[0],
+        "id": schema.get("$id", _CANONICAL_ID[major]),
+    }
+
+
+_BUNDLED = {"v1": _load_info("v1"), "v2": _load_info("v2")}
+
+# Back-compat: existing v1-only call sites keep working unchanged.
+BUNDLED_VERSION = _BUNDLED["v1"]["version"]
+BUNDLED_MAJOR = _BUNDLED["v1"]["major"]
+BUNDLED_ID = _BUNDLED["v1"]["id"]
+
+_SUPPORTED_MAJORS = {"v1", "v2"}
+
+
+def bundled_schema_info_for(major: str) -> dict:
+    return _BUNDLED[major]
 
 
 def parse_major(schema_url):
@@ -35,11 +57,20 @@ def cmp_semver(a, b):
     return 0
 
 
-def schema_check(doc, validated_against=None):
-    validated_against = validated_against or BUNDLED_VERSION
+def effective_major_of(doc: dict) -> str:
     declared = doc.get("$schema")
     declared_major = parse_major(declared)
-    major_unsupported = declared_major is not None and declared_major != BUNDLED_MAJOR
+    return declared_major if declared_major in _SUPPORTED_MAJORS else "v2"
+
+
+def schema_check(doc, validated_against=None):
+    declared = doc.get("$schema")
+    declared_major = parse_major(declared)
+    effective_major = declared_major if declared_major in _SUPPORTED_MAJORS else "v2"
+    major_unsupported = declared_major is not None and declared_major not in _SUPPORTED_MAJORS
+
+    bundled = _BUNDLED[effective_major]
+    validated_against = validated_against or bundled["version"]
 
     meta = doc.get("meta") or {}
     required = meta.get("min_schema_version")
