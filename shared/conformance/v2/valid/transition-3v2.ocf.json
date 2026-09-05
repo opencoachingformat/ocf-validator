@@ -1,0 +1,201 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v2.json",
+  "sport": "basketball",
+  "meta": {
+    "id": "c9d8e7f6-5a4b-3c2d-1e0f-9a8b7c6d5e4f",
+    "title": "3v2 Transition",
+    "description": "Three offensive players attack two defenders in transition and create a quality shot through ball movement and spacing.",
+    "author": "OCF Examples",
+    "tags": [
+      "transition",
+      "3v2",
+      "full-court",
+      "offense",
+      "intermediate"
+    ],
+    "difficulty": "intermediate",
+    "created": "2025-02-27T10:00:00Z",
+    "source_format": "open"
+  },
+  "court": {
+    "ruleset": "fiba",
+    "type": "full_court",
+    "drill_focus": "transition"
+  },
+  "entities": [
+    {
+      "type": "offense",
+      "nr": 1,
+      "x": 0,
+      "y": -12
+    },
+    {
+      "type": "offense",
+      "nr": 2,
+      "x": -4,
+      "y": -10
+    },
+    {
+      "type": "offense",
+      "nr": 3,
+      "x": 4,
+      "y": -10
+    },
+    {
+      "type": "defense",
+      "nr": 1,
+      "x": -2,
+      "y": 2
+    },
+    {
+      "type": "defense",
+      "nr": 2,
+      "x": 2,
+      "y": 2
+    }
+  ],
+  "balls": [
+    {
+      "id": "ball_1",
+      "carried_by": "offense_1"
+    }
+  ],
+  "actions": [
+    {
+      "id": "a1",
+      "player": "offense_1",
+      "type": "dribble",
+      "ball_id": "ball_1",
+      "intensity": "fast",
+      "moves": [
+        {
+          "variant": "speed",
+          "to": {
+            "x": 0,
+            "y": 1
+          }
+        }
+      ],
+      "description": "offense_1 pushes the ball up the middle; offense_2 and offense_3 fill the wings at full speed."
+    },
+    {
+      "id": "a2",
+      "player": "offense_2",
+      "type": "move",
+      "intensity": "fast",
+      "moves": [
+        {
+          "to": {
+            "named": "left_wing"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a3",
+      "player": "offense_3",
+      "type": "move",
+      "intensity": "fast",
+      "moves": [
+        {
+          "to": {
+            "named": "right_wing"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a4",
+      "player": "offense_1",
+      "type": "dribble",
+      "ball_id": "ball_1",
+      "intensity": "fast",
+      "moves": [
+        {
+          "to": {
+            "named": "left_elbow"
+          },
+          "around_player": "defense_1",
+          "side": "right",
+          "arc": "wide"
+        }
+      ],
+      "trigger": {
+        "type": "action_end",
+        "ref": "a1"
+      },
+      "description": "offense_1 attacks defense_1 to commit the help, then kicks to offense_3 in the right corner for the shot."
+    },
+    {
+      "id": "a5",
+      "player": "offense_3",
+      "type": "cut",
+      "variant": "fade",
+      "intensity": "fast",
+      "moves": [
+        {
+          "to": {
+            "named": "right_corner"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a6",
+      "player": "offense_1",
+      "type": "pass",
+      "to_player": "offense_3",
+      "ball_id": "ball_1",
+      "variant": "overhead",
+      "intensity": "hard",
+      "trigger": {
+        "type": "action_end",
+        "ref": "a4"
+      }
+    },
+    {
+      "id": "a7",
+      "player": "offense_3",
+      "type": "shoot",
+      "ball_id": "ball_1",
+      "variant": "three",
+      "intensity": "normal",
+      "trigger": {
+        "type": "reception"
+      }
+    },
+    {
+      "id": "branch_1",
+      "on": "a7",
+      "cases": {
+        "make": {
+          "actions": [],
+          "then": null
+        },
+        "miss": {
+          "actions": [
+            {
+              "id": "a8",
+              "player": "offense_2",
+              "type": "move",
+              "intensity": "fast",
+              "moves": [
+                {
+                  "to": {
+                    "named": "basket"
+                  }
+                }
+              ],
+              "trigger": {
+                "type": "action_end",
+                "ref": "a7"
+              },
+              "description": "On a miss, offense_2 crashes the boards from the left wing to contest the rebound."
+            }
+          ],
+          "then": null
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+{
+  "$schema": "https://opencoachingformat.org/schema/v2.json",
+  "sport": "basketball",
+  "meta": {
+    "id": "a3c2e1d0-9b8f-4a7e-b6c5-1d2e3f4a5b6c",
+    "title": "3-Man Weave",
+    "description": "Classic 3-player weave from full court. Players pass and follow their pass, weaving across the court to finish at the basket.",
+    "author": "OCF Examples",
+    "tags": [
+      "passing",
+      "transition",
+      "full-court",
+      "3-player",
+      "beginner",
+      "conditioning"
+    ],
+    "difficulty": "beginner",
+    "created": "2025-02-27T10:00:00Z",
+    "source_format": "open"
+  },
+  "court": {
+    "ruleset": "fiba",
+    "type": "full_court",
+    "drill_focus": "offense"
+  },
+  "entities": [
+    {
+      "type": "offense",
+      "nr": 1,
+      "x": 0,
+      "y": -14
+    },
+    {
+      "type": "offense",
+      "nr": 2,
+      "x": -5,
+      "y": -14
+    },
+    {
+      "type": "offense",
+      "nr": 3,
+      "x": 5,
+      "y": -14
+    }
+  ],
+  "balls": [
+    {
+      "id": "ball_1",
+      "carried_by": "offense_1"
+    }
+  ],
+  "actions": [
+    {
+      "id": "a1",
+      "player": "offense_1",
+      "type": "pass",
+      "to_player": "offense_2",
+      "ball_id": "ball_1",
+      "variant": "chest",
+      "intensity": "normal",
+      "description": "offense_1 passes to offense_2 and follows the pass, cutting behind offense_2."
+    },
+    {
+      "id": "a2",
+      "player": "offense_1",
+      "type": "cut",
+      "intensity": "fast",
+      "moves": [
+        {
+          "to": {
+            "x": -3,
+            "y": -11
+          }
+        }
+      ],
+      "trigger": {
+        "type": "action_end",
+        "ref": "a1"
+      }
+    },
+    {
+      "id": "a3",
+      "player": "offense_2",
+      "type": "dribble",
+      "ball_id": "ball_1",
+      "intensity": "normal",
+      "moves": [
+        {
+          "to": {
+            "x": 0,
+            "y": -8
+          }
+        }
+      ],
+      "trigger": {
+        "type": "reception"
+      },
+      "description": "offense_2 dribbles to the middle and passes to offense_3, then follows the pass."
+    },
+    {
+      "id": "a4",
+      "player": "offense_2",
+      "type": "pass",
+      "to_player": "offense_3",
+      "ball_id": "ball_1",
+      "variant": "chest",
+      "intensity": "normal",
+      "trigger": {
+        "type": "action_end",
+        "ref": "a3"
+      }
+    },
+    {
+      "id": "a5",
+      "player": "offense_2",
+      "type": "cut",
+      "intensity": "fast",
+      "moves": [
+        {
+          "to": {
+            "x": 3.5,
+            "y": -4
+          }
+        }
+      ],
+      "trigger": {
+        "type": "action_end",
+        "ref": "a4"
+      }
+    },
+    {
+      "id": "a6",
+      "player": "offense_1",
+      "type": "move",
+      "intensity": "normal",
+      "moves": [
+        {
+          "to": {
+            "x": -5,
+            "y": -8
+          }
+        }
+      ]
+    },
+    {
+      "id": "a7",
+      "player": "offense_3",
+      "type": "dribble",
+      "ball_id": "ball_1",
+      "intensity": "normal",
+      "moves": [
+        {
+          "to": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "trigger": {
+        "type": "reception"
+      },
+      "description": "offense_3 dribbles toward the middle and passes to offense_1 cutting from the left, then follows."
+    },
+    {
+      "id": "a8",
+      "player": "offense_3",
+      "type": "pass",
+      "to_player": "offense_1",
+      "ball_id": "ball_1",
+      "variant": "chest",
+      "intensity": "normal",
+      "trigger": {
+        "type": "action_end",
+        "ref": "a7"
+      }
+    },
+    {
+      "id": "a9",
+      "player": "offense_3",
+      "type": "cut",
+      "intensity": "fast",
+      "moves": [
+        {
+          "to": {
+            "x": -3,
+            "y": 5
+          }
+        }
+      ],
+      "trigger": {
+        "type": "action_end",
+        "ref": "a8"
+      }
+    },
+    {
+      "id": "a10",
+      "player": "offense_1",
+      "type": "dribble",
+      "ball_id": "ball_1",
+      "intensity": "normal",
+      "moves": [
+        {
+          "to": {
+            "x": -5,
+            "y": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "a11",
+      "player": "offense_2",
+      "type": "move",
+      "intensity": "normal",
+      "moves": [
+        {
+          "to": {
+            "x": 5,
+            "y": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "a12",
+      "player": "offense_1",
+      "type": "dribble",
+      "ball_id": "ball_1",
+      "intensity": "fast",
+      "moves": [
+        {
+          "variant": "speed",
+          "to": {
+            "named": "basket"
+          }
+        }
+      ],
+      "trigger": {
+        "type": "reception"
+      },
+      "description": "offense_1 attacks the basket for the layup. offense_2 fills the right wing as the kick-out option."
+    },
+    {
+      "id": "a13",
+      "player": "offense_1",
+      "type": "shoot",
+      "ball_id": "ball_1",
+      "variant": "layup",
+      "result": "make",
+      "intensity": "normal",
+      "trigger": {
+        "type": "action_end",
+        "ref": "a12"
+      }
+    },
+    {
+      "id": "a14",
+      "player": "offense_2",
+      "type": "move",
+      "intensity": "normal",
+      "moves": [
+        {
+          "to": {
+            "named": "right_wing"
+          }
+        }
+      ]
+    }
+  ]
+}

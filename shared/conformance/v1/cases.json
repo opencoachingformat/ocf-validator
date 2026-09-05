@@ -129,7 +129,7 @@
       ]
     },
     {
-      "file": "invalid/schema-major-v2.json",
+      "file": "invalid/schema-major-v3.json",
       "codes": [
         "SCHEMA_MAJOR_UNSUPPORTED"
       ]

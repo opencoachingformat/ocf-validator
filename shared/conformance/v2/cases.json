@@ -1,0 +1,33 @@
+{
+  "valid": [
+    { "file": "valid/pick-and-roll.ocf.json" },
+    { "file": "valid/3-man-weave.ocf.json" },
+    { "file": "valid/transition-3v2.ocf.json" },
+    { "file": "valid/quick-mode.ocf.json" },
+    { "file": "valid/action-intensity-physicality.json" },
+    { "file": "valid/external-references.ocf.json" }
+  ],
+  "invalid": [
+    { "file": "invalid/action-pass-missing-receiver.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/action-unknown-type.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/action-bad-movement-intensity.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/action-intensity-on-screen.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/ball-carried-and-at.json", "codes": ["SCHEMA_INVALID"] },
+    { "file": "invalid/sem-branch-target-missing.json", "codes": ["REF_BRANCH_THEN_UNKNOWN"] },
+    { "file": "invalid/sem-pass-non-carrier.json", "codes": ["BALL_CARRIER_MISMATCH"] },
+    { "file": "invalid/malformed.json", "codes": ["JSON_PARSE"] },
+    { "file": "invalid/model-legacy.json", "codes": ["MODEL_LEGACY"] },
+    { "file": "invalid/sem-entity-unknown.json", "codes": ["REF_ENTITY_UNKNOWN"] },
+    { "file": "invalid/sem-ball-unknown.json", "codes": ["REF_BALL_UNKNOWN"] },
+    { "file": "invalid/sem-named-pos-unknown.json", "codes": ["REF_NAMED_POS_UNKNOWN"] },
+    { "file": "invalid/sem-ball-not-at-location.json", "codes": ["BALL_NOT_AT_LOCATION"] },
+    { "file": "invalid/sem-ball-ambiguous.json", "codes": ["BALL_AMBIGUOUS"] },
+    { "file": "invalid/schema-major-v3.json", "codes": ["SCHEMA_MAJOR_UNSUPPORTED"] }
+  ],
+  "warn": [
+    { "file": "warn/action-unusual-carrier.json", "warnings": ["ACTION_UNUSUAL_CARRIER"] },
+    { "file": "warn/contrast-low.json", "warnings": ["CONTRAST_LOW"] },
+    { "file": "warn/entity-offcourt.json", "warnings": ["ENTITY_OFFCOURT"] },
+    { "file": "warn/min-schema-newer.json", "warnings": ["VALIDATOR_MAYBE_OUTDATED"] }
+  ]
+}
