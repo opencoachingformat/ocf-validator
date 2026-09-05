@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { validate } from "../../src/validate.js";
+import { validate } from "../../src/v1/validate.js";
 
 const base = {
   $schema: "https://opencoachingformat.org/schema/v1.json",

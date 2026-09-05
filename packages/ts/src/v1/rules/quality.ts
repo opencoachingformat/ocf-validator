@@ -1,8 +1,8 @@
-import type { Issue, OcfDoc } from "../types.js";
+import type { Issue, OcfDoc } from "../../types.js";
 import type { DocContext } from "../context.js";
 import { getFrames } from "../context.js";
-import { makeIssue } from "../codes.js";
-import { halfExtent } from "../court-dimensions.js";
+import { makeIssue } from "../../codes.js";
+import { halfExtent } from "../../court-dimensions.js";
 
 function relLuminance(hex: string): number | null {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex);

@@ -1,6 +1,6 @@
 import { test, expect } from "vitest";
-import { qualityRules } from "../../src/rules/quality.js";
-import { buildContext } from "../../src/context.js";
+import { qualityRules } from "../../src/v1/rules/quality.js";
+import { buildContext } from "../../src/v1/context.js";
 
 function run(doc: any) { return qualityRules(doc, buildContext(doc)); }
 

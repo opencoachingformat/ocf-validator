@@ -1,7 +1,7 @@
-import type { Issue, OcfDoc } from "../types.js";
+import type { Issue, OcfDoc } from "../../types.js";
 import { getFrames, type DocContext } from "../context.js";
-import { makeIssue } from "../codes.js";
-import { knownNamed } from "../named-positions.js";
+import { makeIssue } from "../../codes.js";
+import { knownNamed } from "../../named-positions.js";
 
 const ENTITY_KEYS = ["player", "for_player", "on_player", "to_player"] as const;
 

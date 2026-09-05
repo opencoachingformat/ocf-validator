@@ -1,6 +1,6 @@
 import { test, expect } from "vitest";
-import { buildContext } from "../../src/context.js";
-import { referenceRules } from "../../src/rules/references.js";
+import { buildContext } from "../../src/v1/context.js";
+import { referenceRules } from "../../src/v1/rules/references.js";
 
 test("a named coordinate not in the registry is flagged", () => {
   const doc = {

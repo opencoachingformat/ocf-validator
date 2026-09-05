@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { possessionByFrame } from "../../src/possession.js";
+import { possessionByFrame } from "../../src/v1/possession.js";
 
 test("initial possession comes from balls[] carried_by", () => {
   const doc = {

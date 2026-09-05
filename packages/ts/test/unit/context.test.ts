@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { buildContext } from "../../src/context.js";
+import { buildContext } from "../../src/v1/context.js";
 
 const doc = {
   entities: [

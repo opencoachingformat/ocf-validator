@@ -1,4 +1,4 @@
-import type { OcfDoc } from "./types.js";
+import type { OcfDoc } from "../types.js";
 
 export interface EntityInfo { type: string; nr?: number; }
 export interface DocContext {

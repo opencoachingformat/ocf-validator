@@ -1,4 +1,4 @@
-import type { OcfDoc } from "./types.js";
+import type { OcfDoc } from "../types.js";
 import { getFrames } from "./context.js";
 
 export interface FrameState {

@@ -1,7 +1,7 @@
-import type { Issue, OcfDoc } from "../types.js";
+import type { Issue, OcfDoc } from "../../types.js";
 import type { DocContext } from "../context.js";
 import { getFrames } from "../context.js";
-import { makeIssue } from "../codes.js";
+import { makeIssue } from "../../codes.js";
 
 function coordKey(c: unknown): string | null {
   if (!c || typeof c !== "object") return null;

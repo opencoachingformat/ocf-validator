@@ -1,7 +1,7 @@
-import type { Issue, OcfDoc } from "../types.js";
+import type { Issue, OcfDoc } from "../../types.js";
 import { getFrames, type DocContext } from "../context.js";
 import type { FrameState } from "../possession.js";
-import { makeIssue } from "../codes.js";
+import { makeIssue } from "../../codes.js";
 
 const BALL_DEPENDENT = new Set(["pass", "shoot", "dribble"]);
 const PICKUP = new Set(["pickup", "rebound"]);

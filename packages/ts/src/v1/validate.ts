@@ -1,13 +1,13 @@
-import type { Issue, Result, OcfDoc, SchemaBlock } from "./types.js";
-import { schemaLevel } from "./schema-level.js";
+import type { Issue, Result, OcfDoc, SchemaBlock } from "../types.js";
+import { schemaLevel } from "../schema-level.js";
 import { buildContext } from "./context.js";
 import { possessionByFrame } from "./possession.js";
 import { referenceRules } from "./rules/references.js";
 import { possessionRules } from "./rules/possession-rules.js";
 import { coherenceRules } from "./rules/coherence.js";
 import { qualityRules } from "./rules/quality.js";
-import { schemaCheck, bundledSchemaInfo, effectiveMajorOf } from "./schema-version.js";
-import { makeIssue } from "./codes.js";
+import { schemaCheck, bundledSchemaInfo, effectiveMajorOf } from "../schema-version.js";
+import { makeIssue } from "../codes.js";
 
 export function assemble(issues: Issue[], schema: SchemaBlock): Result {
   const errors = issues.filter((i) => i.severity === "error");

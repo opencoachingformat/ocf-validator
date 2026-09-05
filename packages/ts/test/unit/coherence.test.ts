@@ -1,6 +1,6 @@
 import { test, expect } from "vitest";
-import { buildContext } from "../../src/context.js";
-import { coherenceRules } from "../../src/rules/coherence.js";
+import { buildContext } from "../../src/v1/context.js";
+import { coherenceRules } from "../../src/v1/rules/coherence.js";
 
 test("end_state contradicting an explicit move endpoint is flagged", () => {
   const doc = {

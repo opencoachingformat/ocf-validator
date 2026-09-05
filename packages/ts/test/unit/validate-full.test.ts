@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { validate } from "../../src/validate.js";
+import { validate } from "../../src/v1/validate.js";
 
 test("a clean minimal doc has no errors after all rules", () => {
   const doc = {

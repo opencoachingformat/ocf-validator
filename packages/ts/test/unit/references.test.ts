@@ -1,7 +1,7 @@
 import { test, expect } from "vitest";
 import type { OcfDoc } from "../../src/types.js";
-import { buildContext } from "../../src/context.js";
-import { referenceRules } from "../../src/rules/references.js";
+import { buildContext } from "../../src/v1/context.js";
+import { referenceRules } from "../../src/v1/rules/references.js";
 
 function run(doc: OcfDoc) { return referenceRules(doc, buildContext(doc)); }
 

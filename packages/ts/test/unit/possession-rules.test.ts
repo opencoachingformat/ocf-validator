@@ -1,7 +1,7 @@
 import { test, expect } from "vitest";
-import { buildContext } from "../../src/context.js";
-import { possessionByFrame } from "../../src/possession.js";
-import { possessionRules } from "../../src/rules/possession-rules.js";
+import { buildContext } from "../../src/v1/context.js";
+import { possessionByFrame } from "../../src/v1/possession.js";
+import { possessionRules } from "../../src/v1/rules/possession-rules.js";
 
 function run(doc: any) {
   return possessionRules(doc, buildContext(doc), possessionByFrame(doc));
