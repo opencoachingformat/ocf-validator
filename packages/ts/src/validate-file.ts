@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import type { Result, OcfDoc } from "./types.js";
 import { makeIssue } from "./codes.js";
-import { assemble, validate } from "./v1/validate.js";
+import { assemble } from "./v1/validate.js";
+import { validate } from "./validate.js";
 import { bundledSchemaInfo } from "./schema-version.js";
 
 export function validateFile(path: string): Result {

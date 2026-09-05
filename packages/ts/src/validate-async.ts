@@ -1,7 +1,7 @@
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import type { OcfDoc, Result } from "./types.js";
-import { validate } from "./v1/validate.js";
+import { validate } from "./validate.js";
 import { schemaCheck, bundledSchemaInfo } from "./schema-version.js";
 import { makeIssue } from "./codes.js";
 

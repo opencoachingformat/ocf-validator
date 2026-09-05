@@ -1,5 +1,6 @@
 import { test, expect } from "vitest";
 import { validate } from "../../src/v1/validate.js";
+import { validate as validateDispatch } from "../../src/validate.js";
 
 const base = {
   $schema: "https://opencoachingformat.org/schema/v1.json",
@@ -21,8 +22,10 @@ test("Result carries a schema block on a clean doc", () => {
 });
 
 test("different-major doc is rejected with SCHEMA_MAJOR_UNSUPPORTED and no semantic cascade", () => {
+  // Major-version gating lives in the top-level dispatcher (src/validate.ts),
+  // not in v1/validate.ts's pure v1 semantic engine — exercise it there.
   const doc = { ...base, $schema: "https://opencoachingformat.org/schema/v3.json" };
-  const res = validate(doc);
+  const res = validateDispatch(doc);
   expect(res.valid).toBe(false);
   expect(res.errors.map((e) => e.code)).toContain("SCHEMA_MAJOR_UNSUPPORTED");
   expect(res.errors.some((e) => e.code === "SCHEMA_INVALID")).toBe(false);
