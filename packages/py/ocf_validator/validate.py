@@ -10,7 +10,7 @@ from .rules import (
     reference_rules,
 )
 from .schema_level import schema_level
-from .schema_version import BUNDLED_MAJOR, schema_check
+from .schema_version import BUNDLED_MAJOR, effective_major_of, schema_check
 from .types import Issue, Result
 
 
@@ -36,6 +36,19 @@ def validate(doc) -> Result:
         return _assemble([
             make_issue("SCHEMA_MAJOR_UNSUPPORTED", "/$schema", {
                 "declared": check["declared_major"], "supported": BUNDLED_MAJOR,
+            }),
+        ], check["block"])
+
+    # v2 is a supported major (schema-checkable), but v1-only semantic rules below
+    # (schema_level/context/possession/reference/coherence/quality) all assume the
+    # frame-based v1 shape and have not yet been ported to v2 (tracked in later
+    # tasks of this plan). Running them against a v2 doc produces misleading
+    # "match: true" schema info alongside fabricated v1-shape errors, so refuse
+    # cleanly instead until v2 semantic dispatch lands.
+    if effective_major_of(doc) == "v2":
+        return _assemble([
+            make_issue("SCHEMA_MAJOR_RULES_PENDING", "/$schema", {
+                "declared": check["declared_major"] or "v2",
             }),
         ], check["block"])
 

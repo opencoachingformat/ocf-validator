@@ -1,7 +1,7 @@
 from ocf_validator import validate
 
 BASE = {
-    "$schema": "x",
+    "$schema": "https://opencoachingformat.org/schema/v1.json",
     "meta": {"id": "00000000-0000-4000-8000-000000000001", "title": "t"},
     "court": {"ruleset": "fiba", "type": "half_court"},
     "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}],

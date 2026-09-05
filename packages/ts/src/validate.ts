@@ -6,7 +6,7 @@ import { referenceRules } from "./rules/references.js";
 import { possessionRules } from "./rules/possession-rules.js";
 import { coherenceRules } from "./rules/coherence.js";
 import { qualityRules } from "./rules/quality.js";
-import { schemaCheck, bundledSchemaInfo } from "./schema-version.js";
+import { schemaCheck, bundledSchemaInfo, effectiveMajorOf } from "./schema-version.js";
 import { makeIssue } from "./codes.js";
 
 export function assemble(issues: Issue[], schema: SchemaBlock): Result {
@@ -32,6 +32,20 @@ export function validate(doc: OcfDoc): Result {
     return assemble([
       makeIssue("SCHEMA_MAJOR_UNSUPPORTED", "/$schema", {
         declared: check.declaredMajor, supported: bundledSchemaInfo.major,
+      }),
+    ], check.block);
+  }
+
+  // v2 is a supported major (schema-checkable), but v1-only semantic rules below
+  // (schemaLevel/context/possession/reference/coherence/quality) all assume the
+  // frame-based v1 shape and have not yet been ported to v2 (tracked in later
+  // tasks of this plan). Running them against a v2 doc produces misleading
+  // "match: true" schema info alongside fabricated v1-shape errors, so refuse
+  // cleanly instead until v2 semantic dispatch lands.
+  if (effectiveMajorOf(doc) === "v2") {
+    return assemble([
+      makeIssue("SCHEMA_MAJOR_RULES_PENDING", "/$schema", {
+        declared: check.declaredMajor ?? "v2",
       }),
     ], check.block);
   }
