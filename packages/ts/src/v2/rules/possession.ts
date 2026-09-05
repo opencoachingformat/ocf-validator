@@ -6,6 +6,19 @@ const BALL_DEPENDENT = new Set(["pass", "shoot", "dribble"]);
 const PICKUP = new Set(["pickup", "rebound"]);
 const NO_BALL_MOVEMENT = new Set(["move", "cut"]);
 
+// screen/defend/tackle/faceoff/check are intentionally untracked here: none
+// carries a ball_id in the schema, so there is no possession effect to apply
+// or check for them (this differs from NO_BALL_MOVEMENT, which actively
+// checks that the actor is NOT holding a ball; these five get no check at
+// all, since a screen/defend/etc. isn't disqualified by holding a ball).
+// action_clear ALSO has a ball_id (an invasion-sport ball-clearing action)
+// and would otherwise fit BALL_DEPENDENT's shape, but is left untracked
+// deliberately: the schema itself $comments it "Reserved for invasion sports
+// ... No variants defined yet" (schema/v1.json, action_clear) — i.e. it's a
+// placeholder type with no finalized semantics yet, not a basketball action
+// this validator currently needs to support. Revisit once invasion-sport
+// action types are promoted out of "reserved" status.
+
 type CarrierMap = Map<string, string | null>; // ball_id -> carrying player, or null if loose/dead
 type LooseSet = Set<string>;
 
@@ -78,6 +91,12 @@ export function possessionRulesV2(doc: Record<string, unknown>, ctx: DocContextV
       for (const [outcome, branchCase] of Object.entries(cases)) {
         // Fork state per case: each outcome is a hypothetical alternate
         // continuation, not a sequential extension shared with sibling cases.
+        // A case's fork is also a dead end for possession purposes: we never
+        // merge it back into the top-level walk after the branch returns, so
+        // the top-level sequence continues from its own pre-branch state,
+        // oblivious to what any case did. `then` (resuming the flat sequence
+        // at an earlier/later action id) is a control-flow construct handled
+        // elsewhere, not a possession-state merge point.
         const forkedCarrier = new Map(localCarrier);
         const forkedLoose = new Set(localLoose);
         const nested = branchCase.actions ?? [];
