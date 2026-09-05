@@ -73,6 +73,16 @@ export function referenceRulesV2(doc: Record<string, unknown>, ctx: DocContextV2
       issues.push(makeIssue("REF_TRIGGER_ACTION_UNKNOWN", `${path}/trigger/ref`, { ref: trigger.ref }));
     }
     walkNamed(action.moves, `${path}/moves`, known, ctx.entityRefs, issues);
+
+    const sideEffects = action.side_effects;
+    if (Array.isArray(sideEffects)) {
+      sideEffects.forEach((se, i) => {
+        const on = (se as Record<string, unknown> | undefined)?.on;
+        if (typeof on === "string" && !ctx.entityRefs.has(on)) {
+          issues.push(makeIssue("REF_ENTITY_UNKNOWN", `${path}/side_effects/${i}/on`, { ref: on }));
+        }
+      });
+    }
   });
 
   return issues;

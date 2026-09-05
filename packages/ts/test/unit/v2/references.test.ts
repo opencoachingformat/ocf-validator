@@ -98,6 +98,32 @@ test("accepts a known around_player inside a move_step", () => {
   expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN")).toBe(false);
 });
 
+test("flags an unknown entity in side_effects[].on", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
+    actions: [
+      { id: "a1", player: "offense_1", type: "dribble", ball_id: "ball_1",
+        moves: [{ to: { x: 1, y: 1 } }],
+        side_effects: [{ type: "screen", on: "defense_9" }] },
+    ],
+  };
+  const issues = referenceRulesV2(doc, ctxFor(doc));
+  expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN" && i.path.includes("side_effects"))).toBe(true);
+});
+
+test("accepts a known entity in side_effects[].on", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }, { type: "defense", nr: 1, x: 0, y: 6 }],
+    actions: [
+      { id: "a1", player: "offense_1", type: "dribble", ball_id: "ball_1",
+        moves: [{ to: { x: 1, y: 1 } }],
+        side_effects: [{ type: "screen", on: "defense_1" }] },
+    ],
+  };
+  const issues = referenceRulesV2(doc, ctxFor(doc));
+  expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN")).toBe(false);
+});
+
 test("checks reference integrity inside nested branch case actions too", () => {
   const doc = {
     entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
