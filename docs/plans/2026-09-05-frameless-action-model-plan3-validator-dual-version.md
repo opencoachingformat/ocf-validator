@@ -1238,17 +1238,32 @@ from .context import DocContextV2, is_branch, walk_actions
 
 _ENTITY_KEYS = ("player", "for_player", "on_player", "to_player", "guards_player", "around_player", "off_screen_by")
 
+# Same entity-ref keys as _ENTITY_KEYS, but checked again here because
+# move_step objects (inside moves[]) carry their own around_player/
+# off_screen_by, independent of any same-named key on the enclosing action
+# (e.g. action_cut has both a top-level around_player default AND a per-step
+# override). Both real conformance fixtures (transition-3v2.ocf.json,
+# pick-and-roll.ocf.json) use the move_step-level field, so this is not
+# optional — omitting it silently lets a bad move_step reference through
+# with zero issues raised (caught the hard way in the TS mirror, fixed
+# there in commit eeb94c9 after Task 8 shipped without it).
+_MOVE_STEP_ENTITY_KEYS = ("around_player", "off_screen_by")
 
-def _walk_named(node: Any, pointer: str, known: set[str], out: list[Issue]) -> None:
+
+def _walk_named(node: Any, pointer: str, known: set[str], entity_refs: dict, out: list[Issue]) -> None:
     if isinstance(node, list):
         for i, v in enumerate(node):
-            _walk_named(v, f"{pointer}/{i}", known, out)
+            _walk_named(v, f"{pointer}/{i}", known, entity_refs, out)
     elif isinstance(node, dict):
         named = node.get("named")
         if isinstance(named, str) and named not in known:
             out.append(make_issue("REF_NAMED_POS_UNKNOWN", f"{pointer}/named", {"ref": named}))
+        for key in _MOVE_STEP_ENTITY_KEYS:
+            ref = node.get(key)
+            if isinstance(ref, str) and ref not in entity_refs:
+                out.append(make_issue("REF_ENTITY_UNKNOWN", f"{pointer}/{key}", {"ref": ref}))
         for k, v in node.items():
-            _walk_named(v, f"{pointer}/{k}", known, out)
+            _walk_named(v, f"{pointer}/{k}", known, entity_refs, out)
 
 
 def reference_rules_v2(doc: dict[str, Any], ctx: DocContextV2) -> list[Issue]:
@@ -1279,7 +1294,14 @@ def reference_rules_v2(doc: dict[str, Any], ctx: DocContextV2) -> list[Issue]:
             ref = trigger.get("ref")
             if isinstance(ref, str) and ref not in ctx.action_ids:
                 issues.append(make_issue("REF_TRIGGER_ACTION_UNKNOWN", f"{path}/trigger/ref", {"ref": ref}))
-        _walk_named(item.get("moves"), f"{path}/moves", known, issues)
+        _walk_named(item.get("moves"), f"{path}/moves", known, ctx.entity_refs, issues)
+
+        side_effects = item.get("side_effects")
+        if isinstance(side_effects, list):
+            for i, se in enumerate(side_effects):
+                on_ref = se.get("on") if isinstance(se, dict) else None
+                if isinstance(on_ref, str) and on_ref not in ctx.entity_refs:
+                    issues.append(make_issue("REF_ENTITY_UNKNOWN", f"{path}/side_effects/{i}/on", {"ref": on_ref}))
 
     walk_actions(top_level, _check)
     return issues
@@ -1287,13 +1309,71 @@ def reference_rules_v2(doc: dict[str, Any], ctx: DocContextV2) -> list[Issue]:
 
 Check `named_positions.py`'s actual exported function signature before assuming `known_named(doc)` matches (it was read in full during planning — `known_named` takes the whole `doc`, confirmed from the v1 `rules.py`'s usage `known_named(doc)` at the top of `reference_rules`). This matches; no fix needed.
 
+**Second fix required, found by the same review pass as the move_step one above:** `side_effect.on` (a required `entity_ref`) is present in `side_effects[]` on every v2 action type in the real schema (`schema/v1.json:245`, referenced from ~12 action definitions), but was completely unchecked in the original TS implementation — same bug class as the move_step gap, fixed in TS commit `c7be0f3`. The Python code above already includes this fix (the `side_effects` block just before `walk_actions(top_level, _check)`); do not omit it.
+
+Also add these two tests to `test_rules.py` (mirroring the TS regression tests added in commits `eeb94c9`/`c7be0f3` after Task 8 shipped without move_step- and side_effects-level checking):
+
+```python
+def test_flags_unknown_entity_in_side_effects_on():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}],
+        "actions": [
+            {"id": "a1", "player": "offense_1", "type": "dribble", "ball_id": "ball_1",
+             "moves": [{"to": {"x": 1, "y": 1}}],
+             "side_effects": [{"type": "screen", "on": "defense_9"}]},
+        ],
+    }
+    issues = reference_rules_v2(doc, build_context_v2(doc))
+    assert any(i.code == "REF_ENTITY_UNKNOWN" and "side_effects" in i.path for i in issues)
+
+
+def test_accepts_known_entity_in_side_effects_on():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}, {"type": "defense", "nr": 1, "x": 0, "y": 6}],
+        "actions": [
+            {"id": "a1", "player": "offense_1", "type": "dribble", "ball_id": "ball_1",
+             "moves": [{"to": {"x": 1, "y": 1}}],
+             "side_effects": [{"type": "screen", "on": "defense_1"}]},
+        ],
+    }
+    issues = reference_rules_v2(doc, build_context_v2(doc))
+    assert not any(i.code == "REF_ENTITY_UNKNOWN" for i in issues)
+```
+
+```python
+def test_flags_unknown_around_player_inside_move_step():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}],
+        "actions": [
+            {"id": "a1", "player": "offense_1", "type": "dribble", "ball_id": "ball_1",
+             "moves": [{"to": {"x": 1, "y": 1}, "around_player": "offense_9"}]},
+        ],
+    }
+    issues = reference_rules_v2(doc, build_context_v2(doc))
+    assert any(i.code == "REF_ENTITY_UNKNOWN" and "around_player" in i.path for i in issues)
+
+
+def test_accepts_known_around_player_inside_move_step():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}, {"type": "defense", "nr": 1, "x": 0, "y": 6}],
+        "actions": [
+            {"id": "a1", "player": "offense_1", "type": "dribble", "ball_id": "ball_1",
+             "moves": [{"to": {"x": 1, "y": 1}, "around_player": "defense_1"}]},
+        ],
+    }
+    issues = reference_rules_v2(doc, build_context_v2(doc))
+    assert not any(i.code == "REF_ENTITY_UNKNOWN" for i in issues)
+```
+
+Expected test count after this task: **8 tests** (the original 6 plus these 2), not 6 as an earlier draft of this task said.
+
 - [ ] **Step 4: Run test to verify it passes**
 
 ```bash
 cd packages/py && python -m pytest tests/v2/test_rules.py -v
 ```
 
-Expected: PASS (all 6 tests).
+Expected: PASS (all 10 tests — the original 6, plus 2 move_step-entity-ref tests, plus 2 side_effects-entity-ref tests, all added above).
 
 - [ ] **Step 5: Commit**
 
