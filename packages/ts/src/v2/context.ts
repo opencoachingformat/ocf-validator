@@ -1,8 +1,8 @@
 import type { OcfDoc } from "../types.js";
 
-export interface EntityInfo { type: string; nr?: number; }
+export interface EntityInfoV2 { type: string; nr?: number; }
 export interface DocContextV2 {
-  entityRefs: Map<string, EntityInfo>;
+  entityRefs: Map<string, EntityInfoV2>;
   ballIds: Set<string>;
   actionIds: Set<string>;
   ruleset: string;
@@ -45,7 +45,7 @@ export function walkActions(
 }
 
 export function buildContextV2(doc: OcfDoc): DocContextV2 {
-  const entityRefs = new Map<string, EntityInfo>();
+  const entityRefs = new Map<string, EntityInfoV2>();
   for (const e of (((doc as { entities?: unknown[] }).entities ?? []) as Record<string, unknown>[])) {
     const ref = entityRef(e);
     if (ref) entityRefs.set(ref, { type: e.type as string, nr: e.nr as number | undefined });
