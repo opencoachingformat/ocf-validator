@@ -1,5 +1,6 @@
 import type { Result, OcfDoc } from "./types.js";
-import { assemble, validate as validateV1 } from "./v1/validate.js";
+import { assemble } from "./types.js";
+import { validate as validateV1 } from "./v1/validate.js";
 import { validateV2 } from "./v2/validate.js";
 import { schemaCheck, bundledSchemaInfo, effectiveMajorOf } from "./schema-version.js";
 import { makeIssue } from "./codes.js";

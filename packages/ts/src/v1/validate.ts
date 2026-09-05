@@ -1,4 +1,5 @@
-import type { Issue, Result, OcfDoc, SchemaBlock } from "../types.js";
+import type { Issue, Result, OcfDoc } from "../types.js";
+import { assemble } from "../types.js";
 import { schemaLevel } from "../schema-level.js";
 import { buildContext } from "./context.js";
 import { possessionByFrame } from "./possession.js";
@@ -8,18 +9,6 @@ import { coherenceRules } from "./rules/coherence.js";
 import { qualityRules } from "./rules/quality.js";
 import { schemaCheck } from "../schema-version.js";
 import { makeIssue } from "../codes.js";
-
-export function assemble(issues: Issue[], schema: SchemaBlock): Result {
-  const errors = issues.filter((i) => i.severity === "error");
-  const warnings = issues.filter((i) => i.severity === "warning");
-  return {
-    valid: errors.length === 0,
-    errors,
-    warnings,
-    summary: { errors: errors.length, warnings: warnings.length },
-    schema,
-  };
-}
 
 export function validate(doc: OcfDoc): Result {
   if (typeof doc !== "object" || doc === null || Array.isArray(doc)) {

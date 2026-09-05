@@ -26,3 +26,16 @@ export interface Result {
 }
 
 export type OcfDoc = Record<string, unknown>;
+
+/** Partitions issues into errors/warnings and computes the summary/valid flag. Shared by both v1 and v2 validate(). */
+export function assemble(issues: Issue[], schema: SchemaBlock): Result {
+  const errors = issues.filter((i) => i.severity === "error");
+  const warnings = issues.filter((i) => i.severity === "warning");
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    summary: { errors: errors.length, warnings: warnings.length },
+    schema,
+  };
+}

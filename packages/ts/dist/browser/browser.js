@@ -1865,8 +1865,8 @@ var require_keyword = __commonJS({
       var _a;
       const { gen, keyword, schema, parentSchema, $data, it } = cxt;
       checkAsyncKeyword(it, def);
-      const validate2 = !$data && def.compile ? def.compile.call(it.self, schema, parentSchema, it) : def.validate;
-      const validateRef = useKeyword(gen, keyword, validate2);
+      const validate3 = !$data && def.compile ? def.compile.call(it.self, schema, parentSchema, it) : def.validate;
+      const validateRef = useKeyword(gen, keyword, validate3);
       const valid = gen.let("valid");
       cxt.block$data(valid, validateKeyword);
       cxt.ok((_a = def.valid) !== null && _a !== void 0 ? _a : valid);
@@ -2939,28 +2939,28 @@ var require_compile = __commonJS({
         if (this.opts.code.process)
           sourceCode = this.opts.code.process(sourceCode, sch);
         const makeValidate = new Function(`${names_1.default.self}`, `${names_1.default.scope}`, sourceCode);
-        const validate2 = makeValidate(this, this.scope.get());
-        this.scope.value(validateName, { ref: validate2 });
-        validate2.errors = null;
-        validate2.schema = sch.schema;
-        validate2.schemaEnv = sch;
+        const validate3 = makeValidate(this, this.scope.get());
+        this.scope.value(validateName, { ref: validate3 });
+        validate3.errors = null;
+        validate3.schema = sch.schema;
+        validate3.schemaEnv = sch;
         if (sch.$async)
-          validate2.$async = true;
+          validate3.$async = true;
         if (this.opts.code.source === true) {
-          validate2.source = { validateName, validateCode, scopeValues: gen._values };
+          validate3.source = { validateName, validateCode, scopeValues: gen._values };
         }
         if (this.opts.unevaluated) {
           const { props, items } = schemaCxt;
-          validate2.evaluated = {
+          validate3.evaluated = {
             props: props instanceof codegen_1.Name ? void 0 : props,
             items: items instanceof codegen_1.Name ? void 0 : items,
             dynamicProps: props instanceof codegen_1.Name,
             dynamicItems: items instanceof codegen_1.Name
           };
-          if (validate2.source)
-            validate2.source.evaluated = (0, codegen_1.stringify)(validate2.evaluated);
+          if (validate3.source)
+            validate3.source.evaluated = (0, codegen_1.stringify)(validate3.evaluated);
         }
-        sch.validate = validate2;
+        sch.validate = validate3;
         return sch;
       } catch (e) {
         delete sch.validate;
@@ -6871,8 +6871,8 @@ var require_formats = __commonJS({
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.formatNames = exports.fastFormats = exports.fullFormats = void 0;
-    function fmtDef(validate2, compare) {
-      return { validate: validate2, compare };
+    function fmtDef(validate3, compare) {
+      return { validate: validate3, compare };
     }
     exports.fullFormats = {
       // date: http://tools.ietf.org/html/rfc3339#section-5.6
@@ -7181,6 +7181,19 @@ var require_dist = __commonJS({
     exports.default = formatsPlugin;
   }
 });
+
+// src/types.ts
+function assemble(issues, schema) {
+  const errors = issues.filter((i) => i.severity === "error");
+  const warnings = issues.filter((i) => i.severity === "warning");
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    summary: { errors: errors.length, warnings: warnings.length },
+    schema
+  };
+}
 
 // src/schema-level.ts
 var import_ajv = __toESM(require_ajv(), 1);
@@ -8015,6 +8028,8 @@ var error_codes_default = {
   REF_ENTITY_UNKNOWN: { severity: "error", category: "reference", message: "References unknown entity '{ref}'.", spec_ref: "design \xA74-A" },
   REF_BALL_UNKNOWN: { severity: "error", category: "reference", message: "References unknown ball '{ref}'.", spec_ref: "design \xA74-A" },
   REF_BRANCH_TARGET_UNKNOWN: { severity: "error", category: "reference", message: "Branch outcome '{outcome}' targets unknown frame '{ref}'.", spec_ref: "design \xA74-A" },
+  REF_TRIGGER_ACTION_UNKNOWN: { severity: "error", category: "reference", message: "trigger references unknown action '{ref}'.", spec_ref: "frameless-action-model-design \xA7Action Identity and Ordering" },
+  REF_BRANCH_ON_UNKNOWN: { severity: "error", category: "reference", message: "branch 'on' references unknown action '{ref}'.", spec_ref: "frameless-action-model-design \xA7Branching" },
   REF_NAMED_POS_UNKNOWN: { severity: "error", category: "reference", message: "Unknown named position '{ref}'.", spec_ref: "design \xA74-A" },
   BALL_CARRIER_MISMATCH: { severity: "error", category: "ball-possession", message: "Player '{player}' performs {action} but does not carry ball '{ball_id}'.", spec_ref: "design \xA74-B" },
   BALL_NOT_AT_LOCATION: { severity: "error", category: "ball-possession", message: "Player '{player}' performs {action} but no ball is available to pick up.", spec_ref: "design \xA74-B" },
@@ -8026,7 +8041,10 @@ var error_codes_default = {
   ENTITY_OFFCOURT: { severity: "warning", category: "quality", message: "Coordinate ({x},{y}) lies outside the {ruleset} court.", spec_ref: "design \xA74-D" },
   EMPTY_FRAME: { severity: "warning", category: "quality", message: "Frame '{ref}' has no actions and no state change.", spec_ref: "design \xA74-D" },
   SCHEMA_MAJOR_UNSUPPORTED: { severity: "error", category: "schema", message: "Document targets schema major {declared} but this validator only supports {supported}. Validation was not run.", spec_ref: "schema/v1.json" },
-  VALIDATOR_MAYBE_OUTDATED: { severity: "warning", category: "schema", message: "Document requires schema >= {required} but this validator bundles {bundled}; some errors below may be caused by an out-of-date validator.", spec_ref: "schema/v1.json" }
+  SCHEMA_MAJOR_RULES_PENDING: { severity: "error", category: "schema", message: "Document targets schema major {declared}, which this validator recognizes but does not yet have semantic rules for. Validation was not run.", spec_ref: "schema/v2.json" },
+  VALIDATOR_MAYBE_OUTDATED: { severity: "warning", category: "schema", message: "Document requires schema >= {required} but this validator bundles {bundled}; some errors below may be caused by an out-of-date validator.", spec_ref: "schema/v1.json" },
+  REF_BRANCH_THEN_UNKNOWN: { severity: "error", category: "reference", message: "branch case 'then' references unknown action '{ref}'.", spec_ref: "frameless-action-model-design \xA7Branching" },
+  CONTINUUM_NO_LOOP_BACK: { severity: "warning", category: "coherence", message: "Document is marked continuum but no branch case's 'then' points to an earlier action id \u2014 this play may not actually loop.", spec_ref: "frameless-action-model-design \xA7Continuum (Looping Plays)" }
 };
 
 // src/codes.ts
@@ -8068,7 +8086,7 @@ function schemaLevel(doc) {
   }));
 }
 
-// src/context.ts
+// src/v1/context.ts
 function entityRef(e) {
   const type = e.type;
   if (!type) return null;
@@ -8097,7 +8115,7 @@ function buildContext(doc) {
   return { entityRefs, ballIds, frameIds, ruleset };
 }
 
-// src/possession.ts
+// src/v1/possession.ts
 function makeFrameState(map) {
   return {
     ballCount: [...map.values()].filter((b) => !b.dead).length,
@@ -8186,7 +8204,7 @@ function knownNamed(doc) {
   return set;
 }
 
-// src/rules/references.ts
+// src/v1/rules/references.ts
 var ENTITY_KEYS = ["player", "for_player", "on_player", "to_player"];
 function walkNamed(node, pointer, known, frameId, out) {
   if (Array.isArray(node)) {
@@ -8206,10 +8224,27 @@ function walkNamed(node, pointer, known, frameId, out) {
     }
   }
 }
+function checkFormationAdjustments(doc, ctx, out) {
+  const meta = doc.meta;
+  const basedOnFormation = meta?.based_on_formation;
+  const adjustments = basedOnFormation?.adjustments;
+  if (!Array.isArray(adjustments)) return;
+  adjustments.forEach((adj, i) => {
+    const entity = adj?.entity;
+    if (typeof entity === "string" && !ctx.entityRefs.has(entity)) {
+      out.push(makeIssue(
+        "REF_ENTITY_UNKNOWN",
+        `/meta/based_on_formation/adjustments/${i}/entity`,
+        { ref: entity }
+      ));
+    }
+  });
+}
 function referenceRules(doc, ctx) {
   const issues = [];
   const frames = getFrames(doc);
   const known = knownNamed(doc);
+  checkFormationAdjustments(doc, ctx, issues);
   frames.forEach((frame, fi) => {
     const frameId = frame.id;
     const actions = frame.actions ?? [];
@@ -8253,7 +8288,7 @@ function referenceRules(doc, ctx) {
   return issues;
 }
 
-// src/rules/possession-rules.ts
+// src/v1/rules/possession-rules.ts
 var BALL_DEPENDENT = /* @__PURE__ */ new Set(["pass", "shoot", "dribble"]);
 var PICKUP = /* @__PURE__ */ new Set(["pickup", "rebound"]);
 function resolveBallId(action, ctx) {
@@ -8331,7 +8366,7 @@ function applyEffect(type, player, action, ball, carrier, loose) {
   }
 }
 
-// src/rules/coherence.ts
+// src/v1/rules/coherence.ts
 function coordKey(c) {
   if (!c || typeof c !== "object") return null;
   const o = c;
@@ -8404,7 +8439,7 @@ function halfExtent(ruleset) {
   return { x: f.w / 2, y: f.l / 2 };
 }
 
-// src/rules/quality.ts
+// src/v1/rules/quality.ts
 function relLuminance(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex);
   if (!m) return null;
@@ -8476,14 +8511,876 @@ function qualityRules(doc, ctx) {
   return issues;
 }
 
-// src/schema-version.ts
-var CANONICAL_ID = "https://opencoachingformat.org/schema/v1.json";
-var rawVersion = ocf_action_v1_default["x-ocf-version"];
-var bundledSchemaInfo = {
-  version: typeof rawVersion === "string" ? rawVersion : "0.0.0",
-  major: "v" + (typeof rawVersion === "string" ? rawVersion.split(".")[0] : "0"),
-  id: ocf_action_v1_default["$id"] ?? CANONICAL_ID
+// ../../shared/schema/ocf-action-v2.json
+var ocf_action_v2_default = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  $id: "https://opencoachingformat.org/schema/v2.json",
+  $comment: "Schema version 2.0.0-alpha.1. Breaking change (frame-less action model) \u2014 part of the v2.0.0 program, not yet a final release (sport-required, affects-roles, and multi-ball are still pending before v2.0.0 ships). The $id keeps the 'v1.json' filename by design even though the content is v2: file naming and x-ocf-version are independent, so a consumer must read x-ocf-version to determine the actual major, not the URL. Version-pinned copies live at /<version>/ocf-action-v1.json.",
+  "x-ocf-version": "2.0.0-alpha.1",
+  title: "Open Coaching Format",
+  description: "Open standard for team-sport coaching diagrams and animations (invasion team sports; basketball first). Semantic action model.",
+  type: "object",
+  required: ["meta", "court", "entities", "actions"],
+  definitions: {
+    ruleset: {
+      type: "string",
+      enum: ["fiba", "nba", "ncaa", "nfhs", "custom"],
+      description: "Basketball ruleset. Determines unit, field dimensions and named position coordinates."
+    },
+    unit: {
+      type: "string",
+      enum: ["m", "ft"],
+      description: "Length unit used for all coordinates in this document. Derived from ruleset unless custom."
+    },
+    coordinate_free: {
+      type: "object",
+      description: "Absolute coordinate in court units. Origin at center of court. x: negative=viewer's left, positive=viewer's right. y: positive=frontcourt (offense basket), negative=backcourt.",
+      required: ["x", "y"],
+      properties: { x: { type: "number" }, y: { type: "number" } },
+      additionalProperties: false
+    },
+    coordinate_named: {
+      type: "object",
+      description: "Reference to a named court position resolved via the active ruleset. Custom positions use 'custom.' prefix.",
+      required: ["named"],
+      properties: { named: { type: "string" } },
+      additionalProperties: false
+    },
+    coordinate_relative: {
+      type: "object",
+      description: "Offset from a named court position, in court units.",
+      required: ["relative_to", "dx", "dy"],
+      properties: {
+        relative_to: { type: "string" },
+        dx: { type: "number" },
+        dy: { type: "number" }
+      },
+      additionalProperties: false
+    },
+    coordinate: {
+      description: "A single point: absolute, named, or relative.",
+      oneOf: [
+        { $ref: "#/definitions/coordinate_free" },
+        { $ref: "#/definitions/coordinate_named" },
+        { $ref: "#/definitions/coordinate_relative" }
+      ]
+    },
+    entity_ref: {
+      type: "string",
+      description: "Reference to a player, coach, cone or station. Format '{offense|defense}_{1-9}', 'coach', 'cone_N', 'station_N'.",
+      pattern: "^(offense|defense)_[1-9]$|^coach$|^(cone|station)_[1-9][0-9]*$"
+    },
+    ball_ref: {
+      type: "string",
+      description: "Reference to a ball by id, e.g. 'ball_1'.",
+      pattern: "^ball_[1-9][0-9]*$"
+    },
+    color_role: {
+      type: "string",
+      enum: ["offense", "defense", "black", "grey", "yellow", "green", "red", "blue", "white"],
+      description: "Semantic color role. Resolved to hex via color_scheme."
+    },
+    entity_offense: {
+      type: "object",
+      description: "Offensive player.",
+      required: ["type", "nr", "x", "y"],
+      properties: {
+        type: { type: "string", const: "offense" },
+        nr: { type: "integer", minimum: 1, maximum: 9 },
+        x: { type: "number" },
+        y: { type: "number" },
+        rotation: { type: "number", minimum: 0, maximum: 360, default: 0 },
+        color: { $ref: "#/definitions/color_role", default: "offense" },
+        label: { type: "string" }
+      },
+      additionalProperties: false
+    },
+    entity_defense: {
+      type: "object",
+      description: "Defensive player.",
+      required: ["type", "nr", "x", "y"],
+      properties: {
+        type: { type: "string", const: "defense" },
+        nr: { type: "integer", minimum: 1, maximum: 9 },
+        x: { type: "number" },
+        y: { type: "number" },
+        rotation: { type: "number", minimum: 0, maximum: 360, default: 0 },
+        color: { $ref: "#/definitions/color_role", default: "defense" },
+        label: { type: "string" }
+      },
+      additionalProperties: false
+    },
+    entity_coach: {
+      type: "object",
+      description: "Coach position marker. May carry a ball.",
+      required: ["type", "x", "y"],
+      properties: {
+        type: { type: "string", const: "coach" },
+        x: { type: "number" },
+        y: { type: "number" }
+      },
+      additionalProperties: false
+    },
+    entity_cone: {
+      type: "object",
+      description: "Training cone / marker.",
+      required: ["type", "nr", "x", "y"],
+      properties: {
+        type: { type: "string", const: "cone" },
+        nr: { type: "integer", minimum: 1 },
+        x: { type: "number" },
+        y: { type: "number" }
+      },
+      additionalProperties: false
+    },
+    entity_station: {
+      type: "object",
+      description: "Numbered station for circuit training.",
+      required: ["type", "nr", "x", "y"],
+      properties: {
+        type: { type: "string", const: "station" },
+        nr: { type: "integer", minimum: 1 },
+        label: { type: "string" },
+        x: { type: "number" },
+        y: { type: "number" }
+      },
+      additionalProperties: false
+    },
+    entity: {
+      description: "Any non-ball entity on the court.",
+      oneOf: [
+        { $ref: "#/definitions/entity_offense" },
+        { $ref: "#/definitions/entity_defense" },
+        { $ref: "#/definitions/entity_coach" },
+        { $ref: "#/definitions/entity_cone" },
+        { $ref: "#/definitions/entity_station" }
+      ]
+    },
+    ball: {
+      type: "object",
+      description: "A ball. Holds exactly one lifecycle state: carried_by, at, or dead.",
+      required: ["id"],
+      properties: {
+        id: { $ref: "#/definitions/ball_ref" },
+        carried_by: { $ref: "#/definitions/entity_ref" },
+        at: { $ref: "#/definitions/coordinate" },
+        dead: { type: "boolean", const: true }
+      },
+      additionalProperties: false,
+      oneOf: [
+        { required: ["carried_by"], not: { anyOf: [{ required: ["at"] }, { required: ["dead"] }] } },
+        { required: ["at"], not: { anyOf: [{ required: ["carried_by"] }, { required: ["dead"] }] } },
+        { required: ["dead"], not: { anyOf: [{ required: ["carried_by"] }, { required: ["at"] }] } }
+      ]
+    },
+    ball_state: {
+      type: "object",
+      description: "A ball's lifecycle state inside a frame state, keyed by ball ref. Exactly one of carried_by/at/dead.",
+      properties: {
+        carried_by: { $ref: "#/definitions/entity_ref" },
+        at: { $ref: "#/definitions/coordinate" },
+        dead: { type: "boolean", const: true }
+      },
+      additionalProperties: false,
+      oneOf: [
+        { required: ["carried_by"], not: { anyOf: [{ required: ["at"] }, { required: ["dead"] }] } },
+        { required: ["at"], not: { anyOf: [{ required: ["carried_by"] }, { required: ["dead"] }] } },
+        { required: ["dead"], not: { anyOf: [{ required: ["carried_by"] }, { required: ["at"] }] } }
+      ]
+    },
+    state: {
+      type: "object",
+      description: "Positional + ball anchor. Entity refs map to a coordinate; the optional 'balls' map keys ball refs to ball states.",
+      properties: {
+        balls: {
+          type: "object",
+          propertyNames: { $ref: "#/definitions/ball_ref" },
+          additionalProperties: { $ref: "#/definitions/ball_state" }
+        }
+      },
+      patternProperties: {
+        "^(offense|defense)_[1-9]$|^coach$|^(cone|station)_[1-9][0-9]*$": { $ref: "#/definitions/coordinate" }
+      },
+      additionalProperties: false
+    },
+    action_id: {
+      type: "string",
+      description: "Unique identifier for an action within the document. Author-chosen, must be unique across the whole actions[] sequence (including inside branch cases).",
+      minLength: 1,
+      pattern: "^[a-zA-Z0-9_-]+$"
+    },
+    trigger: {
+      type: "object",
+      description: "Explicit timing coupling between this action and another action, or an implicit event on this action's own actor (e.g. receiving the ball). Replaces the old after/with/on_catch fields.",
+      required: ["type"],
+      properties: {
+        type: {
+          type: "string",
+          description: "action_end/action_start/action_overlap require 'ref'. 'reception' fires on this action's own actor receiving the ball and takes no ref. Sport definitions may add further open trigger types (e.g. a hockey 'faceoff_won') without a schema change."
+        },
+        ref: { $ref: "#/definitions/action_id" }
+      },
+      additionalProperties: false,
+      if: {
+        properties: { type: { enum: ["action_end", "action_start", "action_overlap"] } }
+      },
+      then: {
+        required: ["type", "ref"]
+      }
+    },
+    side_effect: {
+      type: "object",
+      description: "A secondary effect this action has on another actor, for composite actions where one physical motion does two semantic things at once (e.g. a dribble hand-off, where the passer's body also screens the receiver's defender). Open 'type' vocabulary, sport-extensible.",
+      required: ["type", "on"],
+      properties: {
+        type: { type: "string" },
+        on: { $ref: "#/definitions/entity_ref" },
+        physicality: { $ref: "#/definitions/physicality" }
+      },
+      additionalProperties: false
+    },
+    movement_intensity: {
+      type: "string",
+      description: "Relative tempo over distance for move/cut/dribble. Does not imply a concrete duration \u2014 a downstream application derives timing from this plus actual player speed.",
+      enum: ["slow", "normal", "fast", "explosive"]
+    },
+    ball_intensity: {
+      type: "string",
+      description: "Relative ball speed for pass/shoot. Independent of the pass 'variant' (technique/flight path), e.g. variant 'lob' + intensity 'soft' are separate axes.",
+      enum: ["soft", "normal", "hard", "bullet"]
+    },
+    physicality: {
+      type: "string",
+      description: "Contact/collision style for screen/defend/rebound/pickup, used by a renderer to pick the right animation. Independent of intensity \u2014 no effect on distance/timing.",
+      enum: ["passive", "normal", "aggressive", "hard"]
+    },
+    move_step: {
+      type: "object",
+      description: "One step in a movement sequence. Without 'to' = a move on the spot. Reference fields override the action-level ones.",
+      properties: {
+        variant: { type: "string" },
+        to: { $ref: "#/definitions/coordinate" },
+        around_player: { $ref: "#/definitions/entity_ref" },
+        off_screen_by: { $ref: "#/definitions/entity_ref" },
+        intensity: { $ref: "#/definitions/movement_intensity" },
+        side: { type: "string", enum: ["left", "right"], description: "Which side to pass an around_player obstacle on, relative to the moving player's direction of travel. Optional; renderer chooses when absent." },
+        arc: { type: "string", enum: ["tight", "normal", "wide"], description: "How closely the path wraps an around_player obstacle: tight (curl), normal, wide (flare). Optional; renderer default when absent." }
+      },
+      additionalProperties: false
+    },
+    action_move: {
+      type: "object",
+      required: ["id", "player", "type", "moves"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "move" },
+        moves: { type: "array", minItems: 1, items: { $ref: "#/definitions/move_step" } },
+        intensity: { $ref: "#/definitions/movement_intensity" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_cut: {
+      type: "object",
+      required: ["id", "player", "type", "moves"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "cut" },
+        moves: { type: "array", minItems: 1, items: { $ref: "#/definitions/move_step" } },
+        variant: { type: "string", enum: ["backdoor", "give_and_go", "flash", "v_cut", "l_cut", "curl", "flare", "fade", "basket"] },
+        around_player: { $ref: "#/definitions/entity_ref" },
+        off_screen_by: { $ref: "#/definitions/entity_ref" },
+        side: { type: "string", enum: ["left", "right"], description: "Default side for this cut's around_player steps; overridden per move_step." },
+        arc: { type: "string", enum: ["tight", "normal", "wide"], description: "Default arc for this cut's around_player steps; overridden per move_step." },
+        intensity: { $ref: "#/definitions/movement_intensity" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_screen: {
+      type: "object",
+      required: ["id", "player", "type", "for_player"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "screen" },
+        for_player: { $ref: "#/definitions/entity_ref" },
+        on_player: { $ref: "#/definitions/entity_ref" },
+        at: { $ref: "#/definitions/coordinate" },
+        variant: { type: "string", enum: ["ball_screen", "back_screen", "down_screen", "flare_screen", "cross_screen", "pin_down"] },
+        physicality: { $ref: "#/definitions/physicality" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_defend: {
+      type: "object",
+      required: ["id", "player", "type", "guards_player"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "defend" },
+        guards_player: { $ref: "#/definitions/entity_ref" },
+        variant: { type: "string", enum: ["on_ball", "deny", "help", "hedge", "switch", "box_out"] },
+        physicality: { $ref: "#/definitions/physicality" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_dribble: {
+      type: "object",
+      required: ["id", "player", "type", "moves"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "dribble" },
+        moves: { type: "array", minItems: 1, items: { $ref: "#/definitions/move_step" } },
+        ball_id: { $ref: "#/definitions/ball_ref" },
+        ball_ids: {
+          type: "array",
+          description: "Two-ball dribbling: one ball per hand. Use ball_id for the single-ball case; use ball_ids (not both) when this action controls two balls simultaneously.",
+          minItems: 1,
+          maxItems: 2,
+          items: { $ref: "#/definitions/ball_ref" }
+        },
+        intensity: { $ref: "#/definitions/movement_intensity" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false,
+      not: { required: ["ball_id", "ball_ids"] }
+    },
+    action_pass: {
+      type: "object",
+      required: ["id", "player", "type", "to_player"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "pass" },
+        to_player: { $ref: "#/definitions/entity_ref" },
+        ball_id: { $ref: "#/definitions/ball_ref" },
+        variant: { type: "string", enum: ["chest", "bounce", "overhead", "lob", "baseball", "hand_off", "outlet"] },
+        intensity: { $ref: "#/definitions/ball_intensity" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_shoot: {
+      type: "object",
+      required: ["id", "player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "shoot" },
+        ball_id: { $ref: "#/definitions/ball_ref" },
+        variant: { type: "string", enum: ["jumper", "three", "layup", "floater", "dunk", "hook", "free_throw"] },
+        result: { type: "string", enum: ["make", "miss"] },
+        intensity: { $ref: "#/definitions/ball_intensity" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_rebound: {
+      type: "object",
+      required: ["id", "player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "rebound" },
+        ball_id: { $ref: "#/definitions/ball_ref" },
+        variant: { type: "string", enum: ["offensive", "defensive"] },
+        physicality: { $ref: "#/definitions/physicality" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_pickup: {
+      type: "object",
+      required: ["id", "player", "type", "ball_id"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "pickup" },
+        ball_id: { $ref: "#/definitions/ball_ref" },
+        physicality: { $ref: "#/definitions/physicality" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_tackle: {
+      type: "object",
+      $comment: "Reserved for invasion sports (soccer/futsal/hockey). No variants defined yet; must be specified before promotion.",
+      required: ["id", "player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "tackle" },
+        physicality: { $ref: "#/definitions/physicality" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_clear: {
+      type: "object",
+      $comment: "Reserved for invasion sports (soccer/futsal/hockey). No variants defined yet.",
+      required: ["id", "player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "clear" },
+        ball_id: { $ref: "#/definitions/ball_ref" },
+        intensity: { $ref: "#/definitions/ball_intensity" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_faceoff: {
+      type: "object",
+      $comment: "Reserved for hockey. No variants defined yet.",
+      required: ["id", "player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "faceoff" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action_check: {
+      type: "object",
+      $comment: "Reserved for hockey. No variants defined yet.",
+      required: ["id", "player", "type"],
+      properties: {
+        player: { $ref: "#/definitions/entity_ref" },
+        type: { const: "check" },
+        on_player: { $ref: "#/definitions/entity_ref" },
+        physicality: { $ref: "#/definitions/physicality" },
+        id: { $ref: "#/definitions/action_id" },
+        description: { type: "string", description: "Coaching prose explaining this specific action, e.g. for a renderer narrating a step." },
+        tags: { type: "array", items: { type: "string" } },
+        side_effects: { type: "array", items: { $ref: "#/definitions/side_effect" } },
+        trigger: { $ref: "#/definitions/trigger" }
+      },
+      additionalProperties: false
+    },
+    action: {
+      description: "Any action. Discriminated by 'type'.",
+      oneOf: [
+        { $ref: "#/definitions/action_move" },
+        { $ref: "#/definitions/action_cut" },
+        { $ref: "#/definitions/action_screen" },
+        { $ref: "#/definitions/action_defend" },
+        { $ref: "#/definitions/action_dribble" },
+        { $ref: "#/definitions/action_pass" },
+        { $ref: "#/definitions/action_shoot" },
+        { $ref: "#/definitions/action_rebound" },
+        { $ref: "#/definitions/action_pickup" },
+        { $ref: "#/definitions/action_tackle" },
+        { $ref: "#/definitions/action_clear" },
+        { $ref: "#/definitions/action_faceoff" },
+        { $ref: "#/definitions/action_check" }
+      ]
+    },
+    custom_position: {
+      type: "object",
+      required: ["x", "y"],
+      properties: {
+        x: { type: "number" },
+        y: { type: "number" },
+        description: { type: "string" }
+      },
+      additionalProperties: false
+    },
+    formation_adjustment: {
+      type: "object",
+      description: "Per-entity delta from the resolved formation position. dx/dy are in court units, anchored to that entity's registry position (not a named position, so no relative_to).",
+      required: ["entity", "dx", "dy"],
+      properties: {
+        entity: { $ref: "#/definitions/entity_ref" },
+        dx: { type: "number" },
+        dy: { type: "number" },
+        note: { type: "string" }
+      },
+      additionalProperties: false
+    },
+    based_on_formation: {
+      type: "object",
+      description: "External reference to a starting formation in a versioned registry, resolved to entities at authoring time; pure provenance thereafter. Resolve by id, never by title.",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "Stable formation id in the registry. Only field with normative meaning." },
+        title: { type: "string", description: "Human-readable label, convenience only." },
+        source: { type: "string", format: "uri", description: "Stable URI of the formation registry index. Any URI; not host-restricted." },
+        source_version: {
+          type: "string",
+          description: "SemVer of the referenced registry. Optional; when present MUST be valid SemVer.",
+          pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+        },
+        adjustments: { type: "array", items: { $ref: "#/definitions/formation_adjustment" } }
+      },
+      additionalProperties: false
+    },
+    based_on_play: {
+      type: "object",
+      description: "External reference to another play this one derives from. The referenced play is always the base; this document is the derivative. Resolve by id, never by title.",
+      required: ["id"],
+      properties: {
+        id: { type: "string", description: "Stable play id in the referenced playbook index. Only field with normative meaning." },
+        title: { type: "string", description: "Human-readable label, convenience only." },
+        source: { type: "string", format: "uri", description: "Stable URI of the playbook index/manifest. Any URI; not host-restricted." },
+        source_version: {
+          type: "string",
+          description: "SemVer of the referenced playbook. Optional; when present MUST be valid SemVer.",
+          pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+        },
+        relationship: {
+          type: "string",
+          enum: ["variant", "progression", "counter"],
+          description: "How this play relates to the base. Direction is fixed: this play derives from the referenced base."
+        }
+      },
+      additionalProperties: false
+    },
+    color_scheme: {
+      type: "object",
+      description: "Hex color values for each semantic role.",
+      properties: {
+        offense_fill: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#003366" },
+        offense_stroke: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#ffffff" },
+        defense_fill: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#58001d" },
+        defense_stroke: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#ffffff" },
+        black: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#000000" },
+        grey: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#7f7f7f" },
+        yellow: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#ffff00" },
+        green: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#7ce86a" },
+        red: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#ff0000" },
+        blue: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#5dd5ff" },
+        white: { type: "string", pattern: "^#[0-9a-fA-F]{6}$", default: "#ffffff" }
+      },
+      additionalProperties: false
+    },
+    area: {
+      type: "object",
+      required: ["form", "x", "y"],
+      properties: {
+        form: { type: "string", enum: ["rectangle", "ellipse", "triangle"] },
+        color: { $ref: "#/definitions/color_role", default: "yellow" },
+        opacity: { type: "number", minimum: 0, maximum: 1, default: 0.4 },
+        x: { type: "number" },
+        y: { type: "number" },
+        width: { type: "number" },
+        height: { type: "number" },
+        rotation: { type: "number", minimum: 0, maximum: 360, default: 0 },
+        coords: { type: "array", minItems: 3, maxItems: 3, items: { $ref: "#/definitions/coordinate" } }
+      },
+      additionalProperties: false
+    },
+    label: {
+      type: "object",
+      required: ["text", "x", "y"],
+      properties: {
+        text: { type: "string" },
+        x: { type: "number" },
+        y: { type: "number" },
+        color: { $ref: "#/definitions/color_role", default: "black" }
+      },
+      additionalProperties: false
+    },
+    outcome: {
+      type: "string",
+      enum: ["make", "miss", "turnover", "steal", "foul"],
+      description: "Result that selects a branch target frame."
+    },
+    branch_case: {
+      type: "object",
+      description: "One outcome path of a branch: its own self-contained action sub-sequence, plus an explicit continuation target. 'then' is required so a validator can distinguish 'this path ends here' (then: null) from an author forgetting to continue it \u2014 never an implicit missing field.",
+      required: ["actions", "then"],
+      properties: {
+        actions: {
+          type: "array",
+          description: "Self-contained action sub-sequence for this outcome. May be empty (e.g. a 'miss' case that does nothing but continue elsewhere via 'then').",
+          items: {
+            oneOf: [
+              { $ref: "#/definitions/action" },
+              { $ref: "#/definitions/branch" }
+            ]
+          }
+        },
+        then: {
+          type: ["string", "null"],
+          description: "The action id this case continues into (may be an id that precedes the branch, for a continuum loop), or null if this path ends here (a made shot with no rebound, a turnover that ends the rep, etc)."
+        }
+      },
+      additionalProperties: false
+    },
+    branch: {
+      type: "object",
+      description: "Outcome-dependent continuation, scoped to the outcome of one action. Only actors referenced inside the triggering case's own actions[] are affected \u2014 an uninvolved actor's action is unaffected by a branch it isn't part of. Any other actor's action that needs to react to the same outcome must itself live inside the relevant case's sub-sequence, or use trigger against an action inside it.",
+      required: ["id", "on", "cases"],
+      properties: {
+        id: { $ref: "#/definitions/action_id" },
+        on: {
+          $ref: "#/definitions/action_id",
+          description: "The action whose outcome selects which case applies."
+        },
+        cases: {
+          type: "object",
+          description: "Outcome -> branch_case. Not every outcome needs a case; an outcome with no case means that outcome doesn't branch (the flat sequence continues normally for unaffected actors).",
+          propertyNames: { $ref: "#/definitions/outcome" },
+          additionalProperties: { $ref: "#/definitions/branch_case" },
+          minProperties: 1
+        }
+      },
+      additionalProperties: false
+    }
+  },
+  properties: {
+    $schema: { type: "string", format: "uri" },
+    sport: {
+      type: "string",
+      enum: ["basketball", "soccer", "handball", "hockey", "futsal"],
+      default: "basketball",
+      $comment: "Optional, default basketball (back-compat). Intended to become required in v2.0.0. basketball is fully defined; soccer/handball/hockey/futsal carry provisional minimal action whitelists pending sport-expert review."
+    },
+    meta: {
+      type: "object",
+      required: ["id", "title"],
+      properties: {
+        id: { type: "string", format: "uuid" },
+        title: { type: "string" },
+        description: { type: "string" },
+        author: { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
+        difficulty: { type: "string", enum: ["beginner", "intermediate", "advanced"] },
+        created: { type: "string", format: "date-time" },
+        modified: { type: "string", format: "date-time" },
+        source_format: { type: "string", enum: ["fiba", "fastdraw", "open", "custom"] },
+        source_url: { type: "string", format: "uri" },
+        based_on_formation: { $ref: "#/definitions/based_on_formation" },
+        based_on_play: { $ref: "#/definitions/based_on_play" },
+        min_schema_version: {
+          type: "string",
+          description: "Minimum OCF schema version required to validate this document correctly. Optional; when present MUST be valid SemVer. A validator whose bundled schema is older SHOULD warn that it may be out of date rather than treat unknown newer fields as errors.",
+          pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+        }
+      },
+      additionalProperties: false
+    },
+    court: {
+      type: "object",
+      required: ["ruleset", "type"],
+      properties: {
+        ruleset: { $ref: "#/definitions/ruleset" },
+        type: { type: "string", enum: ["half_court", "full_court"] },
+        drill_focus: { type: "string", enum: ["offense", "defense", "transition", "neutral"], default: "offense" },
+        wheelchair: { type: "boolean", default: false },
+        custom_dimensions: {
+          type: "object",
+          required: ["unit", "length", "width", "basket_from_baseline", "three_point_distance", "paint_width", "paint_depth", "free_throw_distance"],
+          properties: {
+            unit: { $ref: "#/definitions/unit" },
+            length: { type: "number" },
+            width: { type: "number" },
+            basket_from_baseline: { type: "number" },
+            three_point_distance: { type: "number" },
+            paint_width: { type: "number" },
+            paint_depth: { type: "number" },
+            free_throw_distance: { type: "number" }
+          },
+          additionalProperties: false
+        }
+      },
+      additionalProperties: false
+    },
+    color_scheme: { $ref: "#/definitions/color_scheme" },
+    named_positions: {
+      type: "object",
+      properties: {
+        custom: {
+          type: "object",
+          additionalProperties: { $ref: "#/definitions/custom_position" }
+        }
+      },
+      additionalProperties: false
+    },
+    entities: {
+      type: "array",
+      description: "All non-ball entities and their initial (frame 0) positions.",
+      items: { $ref: "#/definitions/entity" }
+    },
+    balls: {
+      type: "array",
+      description: "Balls present at the start of the drill. Each holds exactly one lifecycle state.",
+      items: { $ref: "#/definitions/ball" }
+    },
+    actions: {
+      type: "array",
+      description: "Flat, ordered sequence of actions and branch containers. Framing/grouping into visual steps is entirely a renderer concern; the spec makes no framing decisions.",
+      items: {
+        oneOf: [
+          { $ref: "#/definitions/action" },
+          { $ref: "#/definitions/branch" }
+        ]
+      }
+    },
+    areas: { type: "array", items: { $ref: "#/definitions/area" } },
+    labels: { type: "array", items: { $ref: "#/definitions/label" } },
+    continuum: {
+      type: "boolean",
+      default: false,
+      description: "When true, this play is designed to loop: its terminal state(s) are expected to match its setup state (or an explicitly designated loop anchor a branch_case's 'then' points at), so it can repeat indefinitely. Exact tolerance and non-setup loop anchors are a validator-level concern, not enforced by this schema."
+    }
+  },
+  additionalProperties: false,
+  allOf: [
+    {
+      if: {
+        type: "object",
+        properties: { court: { type: "object", properties: { ruleset: { const: "custom" } } } }
+      },
+      then: {
+        type: "object",
+        properties: { court: { type: "object", required: ["custom_dimensions"] } }
+      }
+    },
+    {
+      $comment: "sport absent OR basketball -> basketball action whitelist (default is a non-validating annotation, so absence must be handled explicitly for back-compat)",
+      if: {
+        anyOf: [
+          { not: { required: ["sport"] } },
+          { properties: { sport: { const: "basketball" } } }
+        ]
+      },
+      then: {
+        type: "object",
+        properties: {
+          actions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { type: { enum: ["move", "cut", "screen", "defend", "dribble", "pass", "shoot", "rebound", "pickup"] } }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "soccer" } } },
+      then: {
+        type: "object",
+        properties: {
+          actions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { type: { enum: ["move", "pass", "shoot", "defend", "dribble", "tackle", "clear"] } }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "handball" } } },
+      then: {
+        type: "object",
+        properties: {
+          actions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { type: { enum: ["move", "pass", "shoot", "defend", "cut", "screen", "pickup"] } }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "hockey" } } },
+      then: {
+        type: "object",
+        properties: {
+          actions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { type: { enum: ["move", "pass", "shoot", "defend", "dribble", "clear", "faceoff", "check"] } }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "futsal" } } },
+      then: {
+        type: "object",
+        properties: {
+          actions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { type: { enum: ["move", "pass", "shoot", "defend", "dribble", "tackle", "clear"] } }
+            }
+          }
+        }
+      }
+    }
+  ]
 };
+
+// src/schema-version.ts
+var CANONICAL_ID_V1 = "https://opencoachingformat.org/schema/v1.json";
+var CANONICAL_ID_V2 = "https://opencoachingformat.org/schema/v2.json";
+function infoFrom(schema, canonicalId) {
+  const rawVersion = schema["x-ocf-version"];
+  const version = typeof rawVersion === "string" ? rawVersion : "0.0.0";
+  return {
+    version,
+    major: "v" + version.split(".")[0],
+    id: schema["$id"] ?? canonicalId
+  };
+}
+var BUNDLED = {
+  v1: infoFrom(ocf_action_v1_default, CANONICAL_ID_V1),
+  v2: infoFrom(ocf_action_v2_default, CANONICAL_ID_V2)
+};
+var bundledSchemaInfo = BUNDLED.v1;
 function parseMajor(schemaUrl) {
   if (typeof schemaUrl !== "string") return null;
   const m = schemaUrl.match(/\/schema\/(v\d+)\.json/);
@@ -8498,10 +9395,14 @@ function cmpSemver(a, b) {
   }
   return 0;
 }
-function schemaCheck(doc, validatedAgainst = bundledSchemaInfo.version) {
+var SUPPORTED_MAJORS = /* @__PURE__ */ new Set(["v1", "v2"]);
+function schemaCheck(doc, validatedAgainstOverride) {
   const declared = doc.$schema ?? null;
   const declaredMajor = parseMajor(declared ?? void 0);
-  const majorUnsupported = declaredMajor !== null && declaredMajor !== bundledSchemaInfo.major;
+  const effectiveMajor = declaredMajor && SUPPORTED_MAJORS.has(declaredMajor) ? declaredMajor : "v2";
+  const majorUnsupported = declaredMajor !== null && !SUPPORTED_MAJORS.has(declaredMajor);
+  const bundled = BUNDLED[effectiveMajor];
+  const validatedAgainst = validatedAgainstOverride ?? bundled.version;
   const meta = doc.meta;
   const requiredByDoc = typeof meta?.min_schema_version === "string" ? meta.min_schema_version : null;
   const outdated = requiredByDoc !== null && cmpSemver(requiredByDoc, validatedAgainst) > 0;
@@ -8513,32 +9414,18 @@ function schemaCheck(doc, validatedAgainst = bundledSchemaInfo.version) {
     block: { validatedAgainst, documentDeclared: declared, requiredByDoc, match }
   };
 }
-
-// src/validate.ts
-function assemble(issues, schema) {
-  const errors = issues.filter((i) => i.severity === "error");
-  const warnings = issues.filter((i) => i.severity === "warning");
-  return {
-    valid: errors.length === 0,
-    errors,
-    warnings,
-    summary: { errors: errors.length, warnings: warnings.length },
-    schema
-  };
+function effectiveMajorOf(doc) {
+  const declared = doc.$schema ?? null;
+  const declaredMajor = parseMajor(declared ?? void 0);
+  return declaredMajor && SUPPORTED_MAJORS.has(declaredMajor) ? declaredMajor : "v2";
 }
+
+// src/v1/validate.ts
 function validate(doc) {
   if (typeof doc !== "object" || doc === null || Array.isArray(doc)) {
     throw new TypeError("validate: expected an object (parsed OCF document)");
   }
   const check = schemaCheck(doc);
-  if (check.majorUnsupported) {
-    return assemble([
-      makeIssue("SCHEMA_MAJOR_UNSUPPORTED", "/$schema", {
-        declared: check.declaredMajor,
-        supported: bundledSchemaInfo.major
-      })
-    ], check.block);
-  }
   const issues = [];
   if (check.outdated) {
     issues.push(makeIssue("VALIDATOR_MAYBE_OUTDATED", "/meta/min_schema_version", {
@@ -8559,6 +9446,302 @@ function validate(doc) {
   return assemble(issues, check.block);
 }
 
+// src/v2/context.ts
+function entityRef2(e) {
+  const type = e.type;
+  if (!type) return null;
+  if (type === "ball" || type === "coach") return type;
+  if ("nr" in e) return `${type}_${e.nr}`;
+  return type;
+}
+function isBranch(item) {
+  return "cases" in item;
+}
+function walkActions(items, visit, basePath = "/actions") {
+  items.forEach((item, i) => {
+    const path = `${basePath}/${i}`;
+    visit(item, path);
+    if (isBranch(item)) {
+      const cases = item.cases ?? {};
+      for (const [outcome, branchCase] of Object.entries(cases)) {
+        const nested = branchCase.actions ?? [];
+        walkActions(nested, visit, `${path}/cases/${outcome}/actions`);
+      }
+    }
+  });
+}
+function buildContextV2(doc) {
+  const entityRefs = /* @__PURE__ */ new Map();
+  for (const e of doc.entities ?? []) {
+    const ref = entityRef2(e);
+    if (ref) entityRefs.set(ref, { type: e.type, nr: e.nr });
+  }
+  const ballIds = /* @__PURE__ */ new Set();
+  for (const b of doc.balls ?? []) {
+    if (typeof b.id === "string") ballIds.add(b.id);
+  }
+  const actionIds = /* @__PURE__ */ new Set();
+  const topLevel = doc.actions ?? [];
+  walkActions(topLevel, (item) => {
+    if (typeof item.id === "string") actionIds.add(item.id);
+  });
+  const ruleset = doc.court?.ruleset ?? "custom";
+  return { entityRefs, ballIds, actionIds, ruleset };
+}
+
+// src/v2/rules/references.ts
+var _ENTITY_KEYS = ["player", "for_player", "on_player", "to_player", "guards_player", "around_player", "off_screen_by"];
+var _MOVE_STEP_ENTITY_KEYS = ["around_player", "off_screen_by"];
+function walkNamed2(node, pointer, known, entityRefs, out) {
+  if (Array.isArray(node)) {
+    node.forEach((v, i) => walkNamed2(v, `${pointer}/${i}`, known, entityRefs, out));
+  } else if (node && typeof node === "object") {
+    const obj = node;
+    const named = obj.named;
+    if (typeof named === "string" && !known.has(named)) {
+      out.push(makeIssue("REF_NAMED_POS_UNKNOWN", `${pointer}/named`, { ref: named }));
+    }
+    for (const key of _MOVE_STEP_ENTITY_KEYS) {
+      const ref = obj[key];
+      if (typeof ref === "string" && !entityRefs.has(ref)) {
+        out.push(makeIssue("REF_ENTITY_UNKNOWN", `${pointer}/${key}`, { ref }));
+      }
+    }
+    for (const [k, v] of Object.entries(obj)) walkNamed2(v, `${pointer}/${k}`, known, entityRefs, out);
+  }
+}
+function checkFormationAdjustments2(doc, ctx, out) {
+  const meta = doc.meta;
+  const basedOnFormation = meta?.based_on_formation;
+  const adjustments = basedOnFormation?.adjustments;
+  if (!Array.isArray(adjustments)) return;
+  adjustments.forEach((adj, i) => {
+    const entity = adj?.entity;
+    if (typeof entity === "string" && !ctx.entityRefs.has(entity)) {
+      out.push(makeIssue(
+        "REF_ENTITY_UNKNOWN",
+        `/meta/based_on_formation/adjustments/${i}/entity`,
+        { ref: entity }
+      ));
+    }
+  });
+}
+function referenceRulesV2(doc, ctx) {
+  const issues = [];
+  const known = knownNamed(doc);
+  const topLevel = doc.actions ?? [];
+  checkFormationAdjustments2(doc, ctx, issues);
+  walkActions(topLevel, (item, path) => {
+    if (isBranch(item)) {
+      const on = item.on;
+      if (typeof on === "string" && !ctx.actionIds.has(on)) {
+        issues.push(makeIssue("REF_BRANCH_ON_UNKNOWN", `${path}/on`, { ref: on }));
+      }
+      return;
+    }
+    const action = item;
+    for (const key of _ENTITY_KEYS) {
+      const ref = action[key];
+      if (typeof ref === "string" && !ctx.entityRefs.has(ref)) {
+        issues.push(makeIssue("REF_ENTITY_UNKNOWN", `${path}/${key}`, { ref }));
+      }
+    }
+    const ballId = action.ball_id;
+    if (typeof ballId === "string" && !ctx.ballIds.has(ballId)) {
+      issues.push(makeIssue("REF_BALL_UNKNOWN", `${path}/ball_id`, { ref: ballId }));
+    }
+    const ballIds = action.ball_ids;
+    if (Array.isArray(ballIds)) {
+      ballIds.forEach((bid, i) => {
+        if (typeof bid === "string" && !ctx.ballIds.has(bid)) {
+          issues.push(makeIssue("REF_BALL_UNKNOWN", `${path}/ball_ids/${i}`, { ref: bid }));
+        }
+      });
+    }
+    const trigger = action.trigger;
+    if (trigger && typeof trigger.ref === "string" && !ctx.actionIds.has(trigger.ref)) {
+      issues.push(makeIssue("REF_TRIGGER_ACTION_UNKNOWN", `${path}/trigger/ref`, { ref: trigger.ref }));
+    }
+    walkNamed2(action.moves, `${path}/moves`, known, ctx.entityRefs, issues);
+    const sideEffects = action.side_effects;
+    if (Array.isArray(sideEffects)) {
+      sideEffects.forEach((se, i) => {
+        const on = se?.on;
+        if (typeof on === "string" && !ctx.entityRefs.has(on)) {
+          issues.push(makeIssue("REF_ENTITY_UNKNOWN", `${path}/side_effects/${i}/on`, { ref: on }));
+        }
+      });
+    }
+  });
+  return issues;
+}
+
+// src/v2/rules/possession.ts
+var BALL_DEPENDENT2 = /* @__PURE__ */ new Set(["pass", "shoot", "dribble"]);
+var PICKUP2 = /* @__PURE__ */ new Set(["pickup", "rebound"]);
+var NO_BALL_MOVEMENT = /* @__PURE__ */ new Set(["move", "cut"]);
+function resolveBallIds(action, ctx) {
+  if (typeof action.ball_id === "string") return [action.ball_id];
+  if (Array.isArray(action.ball_ids)) {
+    const ids = action.ball_ids.filter((b) => typeof b === "string");
+    if (ids.length > 0) return ids;
+  }
+  if (ctx.ballIds.size === 1) return [...ctx.ballIds];
+  if (ctx.ballIds.size === 0) return [];
+  return "AMBIGUOUS";
+}
+function playerHoldsAnyBall(player, carrier) {
+  for (const holder of carrier.values()) if (holder === player) return true;
+  return false;
+}
+function applyEffect2(type, player, action, ballIds, carrier, loose) {
+  for (const ball of ballIds) {
+    switch (type) {
+      case "pass": {
+        const to = action.to_player;
+        carrier.set(ball, typeof to === "string" ? to : null);
+        loose.delete(ball);
+        break;
+      }
+      case "shoot":
+        carrier.set(ball, null);
+        loose.delete(ball);
+        break;
+      case "pickup":
+      case "rebound":
+        carrier.set(ball, player);
+        loose.delete(ball);
+        break;
+    }
+  }
+}
+function possessionRulesV2(doc, ctx) {
+  const issues = [];
+  const carrier = /* @__PURE__ */ new Map();
+  const loose = /* @__PURE__ */ new Set();
+  for (const b of doc.balls ?? []) {
+    const id = b.id;
+    if (typeof id !== "string") continue;
+    carrier.set(id, typeof b.carried_by === "string" ? b.carried_by : null);
+    if (b.at !== void 0) loose.add(id);
+  }
+  function checkAndApply(item, path, localCarrier, localLoose) {
+    if (isBranch(item)) {
+      const cases = item.cases ?? {};
+      for (const [outcome, branchCase] of Object.entries(cases)) {
+        const forkedCarrier = new Map(localCarrier);
+        const forkedLoose = new Set(localLoose);
+        const nested = branchCase.actions ?? [];
+        nested.forEach((child, i) => checkAndApply(child, `${path}/cases/${outcome}/actions/${i}`, forkedCarrier, forkedLoose));
+      }
+      return;
+    }
+    const type = item.type;
+    const player = item.player;
+    if (NO_BALL_MOVEMENT.has(type) && playerHoldsAnyBall(player, localCarrier)) {
+      issues.push(makeIssue("BALL_CARRIER_MISMATCH", path, { player, action: type }));
+      return;
+    }
+    if (BALL_DEPENDENT2.has(type)) {
+      const ballIds = resolveBallIds(item, ctx);
+      if (ballIds === "AMBIGUOUS") {
+        issues.push(makeIssue("BALL_AMBIGUOUS", path, { player, count: ctx.ballIds.size }));
+        return;
+      }
+      for (const ball of ballIds) {
+        if (localCarrier.get(ball) !== player) {
+          issues.push(makeIssue("BALL_CARRIER_MISMATCH", path, { player, action: type, ball_id: ball }));
+        }
+      }
+      if (ctx.entityRefs.get(player)?.type === "defense") {
+        issues.push(makeIssue("ACTION_UNUSUAL_CARRIER", path, { player, action: type }));
+      }
+      applyEffect2(type, player, item, ballIds, localCarrier, localLoose);
+    } else if (PICKUP2.has(type)) {
+      const ballIds = resolveBallIds(item, ctx);
+      if (ballIds === "AMBIGUOUS") {
+        issues.push(makeIssue("BALL_AMBIGUOUS", path, { player, count: ctx.ballIds.size }));
+        return;
+      }
+      for (const ball of ballIds) {
+        if (!localLoose.has(ball)) {
+          issues.push(makeIssue("BALL_NOT_AT_LOCATION", path, { player, action: type }));
+        } else {
+          applyEffect2(type, player, item, [ball], localCarrier, localLoose);
+        }
+      }
+    }
+  }
+  const topLevel = doc.actions ?? [];
+  topLevel.forEach((item, i) => checkAndApply(item, `/actions/${i}`, carrier, loose));
+  return issues;
+}
+
+// src/v2/rules/branch.ts
+function topLevelPositions(topLevel) {
+  const positions = /* @__PURE__ */ new Map();
+  topLevel.forEach((item, i) => {
+    if (typeof item.id === "string") positions.set(item.id, i);
+  });
+  return positions;
+}
+function branchRulesV2(doc, ctx) {
+  const issues = [];
+  const topLevel = doc.actions ?? [];
+  const positions = topLevelPositions(topLevel);
+  let anyLoopsBackward = false;
+  walkActions(topLevel, (item, path) => {
+    if (!isBranch(item)) return;
+    const branchPos = positions.get(item.id);
+    const cases = item.cases ?? {};
+    for (const [outcome, branchCase] of Object.entries(cases)) {
+      const then = branchCase.then;
+      if (then === null || then === void 0) continue;
+      if (!ctx.actionIds.has(then)) {
+        issues.push(makeIssue("REF_BRANCH_THEN_UNKNOWN", `${path}/cases/${outcome}/then`, { ref: then }));
+        continue;
+      }
+      const targetPos = positions.get(then);
+      if (branchPos !== void 0 && targetPos !== void 0 && targetPos < branchPos) {
+        anyLoopsBackward = true;
+      }
+    }
+  });
+  if (doc.continuum === true && !anyLoopsBackward) {
+    issues.push(makeIssue("CONTINUUM_NO_LOOP_BACK", "/continuum", {}));
+  }
+  return issues;
+}
+
+// src/v2/validate.ts
+function validateV2(doc, schemaBlock) {
+  const ctx = buildContextV2(doc);
+  const issues = [
+    ...referenceRulesV2(doc, ctx),
+    ...possessionRulesV2(doc, ctx),
+    ...branchRulesV2(doc, ctx)
+  ];
+  return assemble(issues, schemaBlock);
+}
+
+// src/validate.ts
+function validate2(doc) {
+  if (typeof doc !== "object" || doc === null || Array.isArray(doc)) {
+    throw new TypeError("validate: expected an object (parsed OCF document)");
+  }
+  const check = schemaCheck(doc);
+  if (check.majorUnsupported) {
+    return assemble([
+      makeIssue("SCHEMA_MAJOR_UNSUPPORTED", "/$schema", {
+        declared: check.declaredMajor,
+        supported: bundledSchemaInfo.major
+      })
+    ], check.block);
+  }
+  const major = effectiveMajorOf(doc);
+  return major === "v1" ? validate(doc) : validateV2(doc, check.block);
+}
+
 // src/validate-async.ts
 var import_ajv2 = __toESM(require_ajv(), 1);
 var import_ajv_formats2 = __toESM(require_dist(), 1);
@@ -8566,15 +9749,15 @@ async function validateAsync(doc, opts = {}) {
   const { fetchLatestSchema = true, fetchImpl } = opts;
   const pre = schemaCheck(doc);
   if (!fetchLatestSchema || pre.majorUnsupported || !pre.outdated) {
-    return validate(doc);
+    return validate2(doc);
   }
   const declared = doc.$schema;
   const url = declared ?? bundledSchemaInfo.id;
   const doFetch = fetchImpl ?? (typeof fetch !== "undefined" ? fetch : void 0);
-  if (!doFetch) return validate(doc);
+  if (!doFetch) return validate2(doc);
   try {
     const resp = await doFetch(url);
-    if (!resp.ok) return validate(doc);
+    if (!resp.ok) return validate2(doc);
     const fetched = await resp.json();
     const fetchedVersion = typeof fetched["x-ocf-version"] === "string" ? fetched["x-ocf-version"] : bundledSchemaInfo.version;
     const ajv2 = new import_ajv2.default({ allErrors: true, strictSchema: false, strictRequired: false });
@@ -8582,7 +9765,7 @@ async function validateAsync(doc, opts = {}) {
     const validateFetched = ajv2.compile(fetched);
     const check = schemaCheck(doc, fetchedVersion);
     if (validateFetched(doc)) {
-      const res = validate(doc);
+      const res = validate2(doc);
       const warnings = res.warnings.filter((w) => w.code !== "VALIDATOR_MAYBE_OUTDATED");
       return {
         ...res,
@@ -8602,11 +9785,11 @@ async function validateAsync(doc, opts = {}) {
       schema: check.block
     };
   } catch {
-    return validate(doc);
+    return validate2(doc);
   }
 }
 export {
   bundledSchemaInfo,
-  validate,
+  validate2 as validate,
   validateAsync
 };
