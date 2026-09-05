@@ -21,7 +21,7 @@ test("Result carries a schema block on a clean doc", () => {
 });
 
 test("different-major doc is rejected with SCHEMA_MAJOR_UNSUPPORTED and no semantic cascade", () => {
-  const doc = { ...base, $schema: "https://opencoachingformat.org/schema/v2.json" };
+  const doc = { ...base, $schema: "https://opencoachingformat.org/schema/v3.json" };
   const res = validate(doc);
   expect(res.valid).toBe(false);
   expect(res.errors.map((e) => e.code)).toContain("SCHEMA_MAJOR_UNSUPPORTED");
