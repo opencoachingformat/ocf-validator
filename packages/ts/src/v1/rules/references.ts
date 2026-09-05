@@ -23,10 +23,28 @@ function walkNamed(
   }
 }
 
+// meta.based_on_formation.adjustments[].entity is a document-level entity_ref
+// (external formation-registry provenance, not per-frame/per-action), so it's
+// checked once against the whole document rather than inside the frame loop.
+function checkFormationAdjustments(doc: OcfDoc, ctx: DocContext, out: Issue[]): void {
+  const meta = (doc as { meta?: Record<string, unknown> }).meta;
+  const basedOnFormation = meta?.based_on_formation as { adjustments?: unknown[] } | undefined;
+  const adjustments = basedOnFormation?.adjustments;
+  if (!Array.isArray(adjustments)) return;
+  adjustments.forEach((adj, i) => {
+    const entity = (adj as Record<string, unknown> | undefined)?.entity;
+    if (typeof entity === "string" && !ctx.entityRefs.has(entity)) {
+      out.push(makeIssue("REF_ENTITY_UNKNOWN",
+        `/meta/based_on_formation/adjustments/${i}/entity`, { ref: entity }));
+    }
+  });
+}
+
 export function referenceRules(doc: OcfDoc, ctx: DocContext): Issue[] {
   const issues: Issue[] = [];
   const frames = getFrames(doc);
   const known = knownNamed(doc as Record<string, unknown>);
+  checkFormationAdjustments(doc, ctx, issues);
 
   frames.forEach((frame, fi) => {
     const frameId = frame.id as string | undefined;

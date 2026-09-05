@@ -11,6 +11,26 @@ def test_flags_unknown_entity_reference():
     assert any(i.code == "REF_ENTITY_UNKNOWN" for i in issues)
 
 
+def test_flags_unknown_entity_in_formation_adjustment():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}],
+        "meta": {"based_on_formation": {"id": "some-formation", "adjustments": [{"entity": "offense_9", "dx": 1, "dy": 1}]}},
+        "actions": [],
+    }
+    issues = reference_rules_v2(doc, build_context_v2(doc))
+    assert any(i.code == "REF_ENTITY_UNKNOWN" and i.path == "/meta/based_on_formation/adjustments/0/entity" for i in issues)
+
+
+def test_accepts_known_entity_in_formation_adjustment():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}],
+        "meta": {"based_on_formation": {"id": "some-formation", "adjustments": [{"entity": "offense_1", "dx": 1, "dy": 1}]}},
+        "actions": [],
+    }
+    issues = reference_rules_v2(doc, build_context_v2(doc))
+    assert not any(i.code == "REF_ENTITY_UNKNOWN" for i in issues)
+
+
 def test_flags_unknown_trigger_ref():
     doc = {
         "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}],

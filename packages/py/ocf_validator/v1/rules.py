@@ -35,10 +35,32 @@ def _walk_named(
             _walk_named(v, f"{pointer}/{k}", known, frame_id, out)
 
 
+# meta.based_on_formation.adjustments[].entity is a document-level entity_ref
+# (external formation-registry provenance, not per-frame/per-action), so it's
+# checked once against the whole document rather than inside the frame loop.
+def _check_formation_adjustments(doc: dict[str, Any], ctx: DocContext, out: list[Issue]) -> None:
+    meta = doc.get("meta") or {}
+    based_on_formation = meta.get("based_on_formation") if isinstance(meta, dict) else None
+    adjustments = based_on_formation.get("adjustments") if isinstance(based_on_formation, dict) else None
+    if not isinstance(adjustments, list):
+        return
+    for i, adj in enumerate(adjustments):
+        entity = adj.get("entity") if isinstance(adj, dict) else None
+        if isinstance(entity, str) and entity not in ctx.entity_refs:
+            out.append(
+                make_issue(
+                    "REF_ENTITY_UNKNOWN",
+                    f"/meta/based_on_formation/adjustments/{i}/entity",
+                    {"ref": entity},
+                )
+            )
+
+
 def reference_rules(doc: dict[str, Any], ctx: DocContext) -> list[Issue]:
     issues: list[Issue] = []
     frames = get_frames(doc)
     known = known_named(doc)
+    _check_formation_adjustments(doc, ctx, issues)
 
     for fi, frame in enumerate(frames):
         frame_id = frame.get("id")

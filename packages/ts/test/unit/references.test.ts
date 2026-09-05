@@ -5,6 +5,30 @@ import { referenceRules } from "../../src/v1/rules/references.js";
 
 function run(doc: OcfDoc) { return referenceRules(doc, buildContext(doc)); }
 
+test("meta.based_on_formation.adjustments[].entity referencing an unknown entity is flagged", () => {
+  const doc: OcfDoc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }], balls: [],
+    court: { ruleset: "fiba", type: "half_court" },
+    meta: { id: "00000000-0000-4000-8000-000000000001", title: "t",
+      based_on_formation: { id: "some-formation", adjustments: [{ entity: "offense_9", dx: 1, dy: 1 }] } } as unknown as OcfDoc["meta"],
+    frames: [{ id: "f1", actions: [], end_state: {} }],
+  };
+  const issues = run(doc);
+  expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN" && i.path === "/meta/based_on_formation/adjustments/0/entity")).toBe(true);
+});
+
+test("meta.based_on_formation.adjustments[].entity referencing a known entity is accepted", () => {
+  const doc: OcfDoc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }], balls: [],
+    court: { ruleset: "fiba", type: "half_court" },
+    meta: { id: "00000000-0000-4000-8000-000000000001", title: "t",
+      based_on_formation: { id: "some-formation", adjustments: [{ entity: "offense_1", dx: 1, dy: 1 }] } } as unknown as OcfDoc["meta"],
+    frames: [{ id: "f1", actions: [], end_state: {} }],
+  };
+  const issues = run(doc);
+  expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN")).toBe(false);
+});
+
 test("unknown branch target is flagged", () => {
   const doc: OcfDoc = {
     entities: [{ type: "offense", nr: 1, x: 0, y: 5 }], balls: [],

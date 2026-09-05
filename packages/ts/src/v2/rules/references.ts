@@ -36,10 +36,28 @@ function walkNamed(
   }
 }
 
+// meta.based_on_formation.adjustments[].entity is a document-level entity_ref
+// (external formation-registry provenance, not per-action), so it's checked
+// once against the whole document rather than inside the actions walk.
+function checkFormationAdjustments(doc: Record<string, unknown>, ctx: DocContextV2, out: Issue[]): void {
+  const meta = doc.meta as Record<string, unknown> | undefined;
+  const basedOnFormation = meta?.based_on_formation as { adjustments?: unknown[] } | undefined;
+  const adjustments = basedOnFormation?.adjustments;
+  if (!Array.isArray(adjustments)) return;
+  adjustments.forEach((adj, i) => {
+    const entity = (adj as Record<string, unknown> | undefined)?.entity;
+    if (typeof entity === "string" && !ctx.entityRefs.has(entity)) {
+      out.push(makeIssue("REF_ENTITY_UNKNOWN",
+        `/meta/based_on_formation/adjustments/${i}/entity`, { ref: entity }));
+    }
+  });
+}
+
 export function referenceRulesV2(doc: Record<string, unknown>, ctx: DocContextV2): Issue[] {
   const issues: Issue[] = [];
   const known = knownNamed(doc);
   const topLevel = ((doc.actions ?? []) as Record<string, unknown>[]);
+  checkFormationAdjustments(doc, ctx, issues);
 
   walkActions(topLevel, (item, path) => {
     if (isBranch(item)) {

@@ -6,6 +6,26 @@ function ctxFor(doc: Record<string, unknown>) {
   return buildContextV2(doc);
 }
 
+test("flags meta.based_on_formation.adjustments[].entity referencing an unknown entity", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
+    meta: { based_on_formation: { id: "some-formation", adjustments: [{ entity: "offense_9", dx: 1, dy: 1 }] } },
+    actions: [],
+  };
+  const issues = referenceRulesV2(doc, ctxFor(doc));
+  expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN" && i.path === "/meta/based_on_formation/adjustments/0/entity")).toBe(true);
+});
+
+test("accepts meta.based_on_formation.adjustments[].entity referencing a known entity", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],
+    meta: { based_on_formation: { id: "some-formation", adjustments: [{ entity: "offense_1", dx: 1, dy: 1 }] } },
+    actions: [],
+  };
+  const issues = referenceRulesV2(doc, ctxFor(doc));
+  expect(issues.some((i) => i.code === "REF_ENTITY_UNKNOWN")).toBe(false);
+});
+
 test("flags an action referencing an unknown entity", () => {
   const doc = {
     entities: [{ type: "offense", nr: 1, x: 0, y: 5 }],

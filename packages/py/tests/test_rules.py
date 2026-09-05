@@ -33,6 +33,26 @@ def test_reference_unknown_entity():
     assert "REF_ENTITY_UNKNOWN" in codes
 
 
+def test_reference_formation_adjustment_unknown_entity():
+    doc = _doc(
+        meta={"based_on_formation": {"id": "some-formation", "adjustments": [{"entity": "offense_9", "dx": 1, "dy": 1}]}},
+        frames=[{"id": "f1", "actions": [], "end_state": {}}],
+    )
+    ctx = build_context(doc)
+    issues = reference_rules(doc, ctx)
+    assert any(i.code == "REF_ENTITY_UNKNOWN" and i.path == "/meta/based_on_formation/adjustments/0/entity" for i in issues)
+
+
+def test_reference_formation_adjustment_known_entity():
+    doc = _doc(
+        meta={"based_on_formation": {"id": "some-formation", "adjustments": [{"entity": "offense_1", "dx": 1, "dy": 1}]}},
+        frames=[{"id": "f1", "actions": [], "end_state": {}}],
+    )
+    ctx = build_context(doc)
+    issues = reference_rules(doc, ctx)
+    assert not any(i.code == "REF_ENTITY_UNKNOWN" for i in issues)
+
+
 def test_possession_mismatch():
     # offense_2 passes but offense_1 holds the ball -> mismatch
     doc = _doc(

@@ -35,10 +35,32 @@ def _walk_named(node: Any, pointer: str, known: set[str], entity_refs: dict, out
             _walk_named(v, f"{pointer}/{k}", known, entity_refs, out)
 
 
+# meta.based_on_formation.adjustments[].entity is a document-level entity_ref
+# (external formation-registry provenance, not per-action), so it's checked
+# once against the whole document rather than inside the actions walk.
+def _check_formation_adjustments(doc: dict[str, Any], ctx: DocContextV2, out: list[Issue]) -> None:
+    meta = doc.get("meta") or {}
+    based_on_formation = meta.get("based_on_formation") if isinstance(meta, dict) else None
+    adjustments = based_on_formation.get("adjustments") if isinstance(based_on_formation, dict) else None
+    if not isinstance(adjustments, list):
+        return
+    for i, adj in enumerate(adjustments):
+        entity = adj.get("entity") if isinstance(adj, dict) else None
+        if isinstance(entity, str) and entity not in ctx.entity_refs:
+            out.append(
+                make_issue(
+                    "REF_ENTITY_UNKNOWN",
+                    f"/meta/based_on_formation/adjustments/{i}/entity",
+                    {"ref": entity},
+                )
+            )
+
+
 def reference_rules_v2(doc: dict[str, Any], ctx: DocContextV2) -> list[Issue]:
     issues: list[Issue] = []
     known = known_named(doc)
     top_level = doc.get("actions") or []
+    _check_formation_adjustments(doc, ctx, issues)
 
     def _check(item: dict[str, Any], path: str) -> None:
         if is_branch(item):
