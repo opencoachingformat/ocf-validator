@@ -5,20 +5,35 @@ import pytest
 
 from ocf_validator import validate_file
 
-ROOT = Path(__file__).resolve().parents[3] / "shared" / "conformance"
-CASES = json.loads((ROOT / "cases.json").read_text())
+SHARED_ROOT = Path(__file__).resolve().parents[3] / "shared" / "conformance"
+VERSIONS = ("v1", "v2")
 
 
-@pytest.mark.parametrize("c", CASES["valid"], ids=lambda c: c["file"])
-def test_valid(c):
-    res = validate_file(str(ROOT / c["file"]))
+def _load_cases(version: str) -> dict:
+    return json.loads((SHARED_ROOT / version / "cases.json").read_text())
+
+
+CASES = {version: _load_cases(version) for version in VERSIONS}
+
+
+@pytest.mark.parametrize(
+    "version,c",
+    [(v, c) for v in VERSIONS for c in CASES[v]["valid"]],
+    ids=[f"{v}/{c['file']}" for v in VERSIONS for c in CASES[v]["valid"]],
+)
+def test_valid(version, c):
+    res = validate_file(str(SHARED_ROOT / version / c["file"]))
     assert res.errors == [], [e.code for e in res.errors]
     assert res.valid
 
 
-@pytest.mark.parametrize("c", CASES["invalid"], ids=lambda c: c["file"])
-def test_invalid(c):
-    res = validate_file(str(ROOT / c["file"]))
+@pytest.mark.parametrize(
+    "version,c",
+    [(v, c) for v in VERSIONS for c in CASES[v]["invalid"]],
+    ids=[f"{v}/{c['file']}" for v in VERSIONS for c in CASES[v]["invalid"]],
+)
+def test_invalid(version, c):
+    res = validate_file(str(SHARED_ROOT / version / c["file"]))
     assert not res.valid
     got = {e.code for e in res.errors}
     for code in c["codes"]:
@@ -27,9 +42,13 @@ def test_invalid(c):
         assert w in {x.code for x in res.warnings}
 
 
-@pytest.mark.parametrize("c", CASES.get("warn", []), ids=lambda c: c["file"])
-def test_warn(c):
-    res = validate_file(str(ROOT / c["file"]))
+@pytest.mark.parametrize(
+    "version,c",
+    [(v, c) for v in VERSIONS for c in CASES[v].get("warn", [])],
+    ids=[f"{v}/{c['file']}" for v in VERSIONS for c in CASES[v].get("warn", [])],
+)
+def test_warn(version, c):
+    res = validate_file(str(SHARED_ROOT / version / c["file"]))
     assert res.valid
     gotw = {w.code for w in res.warnings}
     for w in c["warnings"]:

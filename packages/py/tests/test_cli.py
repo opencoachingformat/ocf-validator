@@ -4,8 +4,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-VALID = ROOT / "shared" / "conformance" / "valid" / "pick-and-roll.ocf.json"
-INVALID = ROOT / "shared" / "conformance" / "invalid" / "sem-pass-non-carrier.json"
+VALID = ROOT / "shared" / "conformance" / "v1" / "valid" / "pick-and-roll.ocf.json"
+INVALID = ROOT / "shared" / "conformance" / "v1" / "invalid" / "sem-pass-non-carrier.json"
 
 
 def _run(args):

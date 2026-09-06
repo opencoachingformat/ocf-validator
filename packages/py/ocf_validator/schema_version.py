@@ -47,9 +47,18 @@ def parse_major(schema_url):
     return m.group(1) if m else None
 
 
+def _lenient_int(segment: str) -> int:
+    # Mirrors JS's `parseInt(segment, 10)`: parse the leading run of digits
+    # and default to 0 otherwise. This tolerates a prerelease suffix on the
+    # last segment (e.g. "0-alpha.1" in "2.0.0-alpha.1", the v2 schema's
+    # in-development x-ocf-version) the same way the TS implementation does.
+    m = re.match(r"-?\d+", segment)
+    return int(m.group(0)) if m else 0
+
+
 def cmp_semver(a, b):
-    pa = [int(x) for x in a.split(".")]
-    pb = [int(x) for x in b.split(".")]
+    pa = [_lenient_int(x) for x in a.split(".")]
+    pb = [_lenient_int(x) for x in b.split(".")]
     for i in range(3):
         d = (pa[i] if i < len(pa) else 0) - (pb[i] if i < len(pb) else 0)
         if d:
