@@ -31,9 +31,13 @@ from the fetched content's own `x-ocf-version` field (never from the spec
 repo's on-disk filename) and routes it accordingly:
 
 1. A new **"Determine fetched schema's actual major version"** step reads
-   `x-ocf-version` out of the downloaded JSON and derives `vN`. If `vN` is
-   neither `v1` nor `v2`, the step prints `::error::` and exits 1 — the job
-   stops there, before any file is written or PR opened.
+   `x-ocf-version` out of the downloaded JSON and derives `vN`. A schema
+   missing `x-ocf-version` entirely fails with its own distinct
+   `::error::` message (rather than silently defaulting to a `v0` that
+   would then fail the generic "unsupported major" check with a more
+   confusing message); if `vN` is present but neither `v1` nor `v2`, the
+   step prints the "unsupported major" `::error::` instead. Either way the
+   job stops there, before any file is written or PR opened.
 2. **"Diff against vendored copy"** resolves its diff target dynamically as
    `shared/schema/ocf-action-${MAJOR}.json` instead of the old hardcoded
    `ocf-action-v1.json`. A missing target (the first-ever sync of a brand
@@ -41,10 +45,15 @@ repo's on-disk filename) and routes it accordingly:
    erroring on a nonexistent diff.
 3. **"Update vendored schema + provenance"** writes only to the resolved
    `$TARGET` path — the other major's vendored file is never touched in that
-   run. `PROVENANCE.md` moved from overwrite (`>`) to append (`>>`), since
-   with two vendored schemas the file now needs to accumulate one
-   provenance entry per major over time instead of each sync erasing the
-   other major's note.
+   run. `PROVENANCE.md` now holds one `## ocf-action-vN.json` section per
+   vendored major, via a small helper script
+   (`.github/scripts/update-provenance.py`) that replaces that major's own
+   section in place on every sync of it, appending a new section only the
+   first time a major is synced. (An earlier version of this step used a
+   plain shell `>>` append instead, which would have piled up a duplicate
+   block — with a repeated top-level heading — on every single sync from
+   then on, not just the eventual first v2 sync; caught in review before
+   merge and replaced with the section-per-major design described here.)
 4. **"Open pull request"**'s `commit-message`, `title`, `body`, and `branch`
    all now include the resolved major (e.g. `auto/schema-sync-v2-2.0.0` vs
    `auto/schema-sync-v1-1.5.0`), so two syncs for different majors landing
@@ -75,8 +84,11 @@ are trusted to run unattended the way v1.x syncs already do:
 - Review the resulting PR's file list and confirm `ocf-action-v1.json` does
   **not** appear in it — this is the single most important check, since a
   regression here is exactly the failure mode this ADR exists to prevent.
-- Confirm `PROVENANCE.md`'s diff is an appended entry, not a wholesale
-  replacement of the existing v1 entry.
+- Confirm `PROVENANCE.md`'s diff adds a NEW `## ocf-action-v2.json` section
+  and leaves the existing `## ocf-action-v1.json` section's content
+  untouched (this is the first-ever sync of a new major, so it must append,
+  not replace anything — a same-major re-sync later would correctly replace
+  just that major's own section instead).
 
 Once that first v2.0.0 sync has been observed clean, v2.x syncs can be
 trusted the same way v1.x syncs are today.
@@ -86,9 +98,9 @@ trusted the same way v1.x syncs are today.
 - **Positive:** A v2.0.0 (or later v2.x) spec release can no longer
   silently clobber the vendored v1 schema; an unrecognized future major
   (v3+) fails the workflow loudly instead of being mis-filed.
-- **Positive:** `PROVENANCE.md` now carries a durable history of every
-  major's sync provenance instead of only ever reflecting the most recent
-  sync of whichever major landed last.
+- **Positive:** `PROVENANCE.md` now carries one durably-current section per
+  vendored major (each replaced in place on its own re-syncs) instead of
+  only ever reflecting the most recent sync of whichever major landed last.
 - **Negative / residual risk:** This is code-level, trace-verified
   correctness, not yet run-verified. Until the first real v2.0.0 dispatch
   fires, there is a residual (small) risk of an untested edge case in the
