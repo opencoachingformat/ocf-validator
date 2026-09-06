@@ -1,5 +1,5 @@
 from ocf_validator import validate
-from ocf_validator.schema_version import bundled_schema_info_for
+from ocf_validator.schema_version import bundled_schema_info_for, cmp_semver
 
 BASE = {
     "$schema": "https://opencoachingformat.org/schema/v1.json",
@@ -44,3 +44,22 @@ def test_bundled_schema_info_for_v2_reports_major_v2():
 def test_bundled_schema_info_for_v1_unchanged():
     info = bundled_schema_info_for("v1")
     assert info["major"] == "v1"
+
+
+def test_cmp_semver_normal_versions():
+    assert cmp_semver("1.2.3", "1.2.3") == 0
+    assert cmp_semver("2.0.0", "1.9.9") > 0
+    assert cmp_semver("1.2.3", "1.2.4") < 0
+
+
+def test_cmp_semver_tolerates_prerelease_suffix_on_either_side():
+    # Regression test for a real crash: cmp_semver used to raise ValueError on
+    # a prerelease-suffixed segment like "0-alpha" (int("0-alpha") fails).
+    # The v2 bundled schema's own x-ocf-version ("2.0.0-alpha.1") triggers
+    # this on every validated document until fixed.
+    assert cmp_semver("2.0.0-alpha.1", "2.0.0-alpha.1") == 0
+    assert cmp_semver("2.0.0-alpha.1", "1.9.9") > 0
+    assert cmp_semver("1.9.9", "2.0.0-alpha.1") < 0
+    # A non-numeric-leading segment (no digits at all) is tolerated as 0,
+    # matching JS's parseInt("alpha", 10) -> NaN -> treated as 0 upstream.
+    assert cmp_semver("1.2.alpha", "1.2.0") == 0
