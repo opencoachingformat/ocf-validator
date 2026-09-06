@@ -102,6 +102,45 @@ test("omitting ball_id with two balls is BALL_AMBIGUOUS", () => {
   expect(run(doc).some((i) => i.code === "BALL_AMBIGUOUS")).toBe(true);
 });
 
+test("a rebound is legal after a missed shot", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }, { type: "offense", nr: 2, x: 1, y: 5 }],
+    balls: [{ id: "ball_1", carried_by: "offense_1" }],
+    actions: [
+      { id: "a1", player: "offense_1", type: "shoot", ball_id: "ball_1", result: "miss" },
+      { id: "a2", player: "offense_2", type: "rebound", ball_id: "ball_1" },
+    ],
+  };
+  const issues = run(doc);
+  expect(issues).toEqual([]);
+});
+
+test("a shoot with no result field is treated as a miss for possession purposes (rebound stays representable)", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }, { type: "offense", nr: 2, x: 1, y: 5 }],
+    balls: [{ id: "ball_1", carried_by: "offense_1" }],
+    actions: [
+      { id: "a1", player: "offense_1", type: "shoot", ball_id: "ball_1" },
+      { id: "a2", player: "offense_2", type: "rebound", ball_id: "ball_1" },
+    ],
+  };
+  const issues = run(doc);
+  expect(issues).toEqual([]);
+});
+
+test("a rebound after a made shot is flagged (no live ball to retrieve)", () => {
+  const doc = {
+    entities: [{ type: "offense", nr: 1, x: 0, y: 5 }, { type: "offense", nr: 2, x: 1, y: 5 }],
+    balls: [{ id: "ball_1", carried_by: "offense_1" }],
+    actions: [
+      { id: "a1", player: "offense_1", type: "shoot", ball_id: "ball_1", result: "make" },
+      { id: "a2", player: "offense_2", type: "rebound", ball_id: "ball_1" },
+    ],
+  };
+  const issues = run(doc);
+  expect(issues.some((i) => i.code === "BALL_NOT_AT_LOCATION")).toBe(true);
+});
+
 test("a grandchild branch case does not see a sibling grandchild's or great-uncle case's carrier changes", () => {
   const doc = {
     entities: [

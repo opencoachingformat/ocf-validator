@@ -177,20 +177,31 @@
             {
               "id": "a8",
               "player": "offense_2",
-              "type": "move",
-              "intensity": "fast",
-              "moves": [
-                {
-                  "to": {
-                    "named": "basket"
-                  }
-                }
+              "type": "rebound",
+              "ball_id": "ball_1",
+              "variant": "offensive",
+              "tags": [
+                "put_back"
               ],
+              "physicality": "aggressive",
               "trigger": {
                 "type": "action_end",
                 "ref": "a7"
               },
-              "description": "On a miss, offense_2 crashes the boards from the left wing to contest the rebound."
+              "description": "On a miss, offense_2 crashes from the left wing for the offensive rebound and finishes."
+            },
+            {
+              "id": "a9",
+              "player": "offense_2",
+              "type": "shoot",
+              "ball_id": "ball_1",
+              "variant": "layup",
+              "result": "make",
+              "intensity": "normal",
+              "trigger": {
+                "type": "action_end",
+                "ref": "a8"
+              }
             }
           ],
           "then": null

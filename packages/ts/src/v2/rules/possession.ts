@@ -61,7 +61,19 @@ function applyEffect(
       }
       case "shoot":
         carrier.set(ball, null);
-        loose.delete(ball);
+        // A make ends the ball's life in this possession sequence (out of
+        // bounds retrieval/inbound is a separate, later concern); a miss
+        // (or an unspecified result, treated as a miss for possession
+        // purposes so a rebound is always representable) puts the ball in
+        // play again for a rebound. There's no shot-location field in the
+        // schema to track where the loose ball ends up — `loose` here is a
+        // pure membership set, not a location, matching how it's already
+        // seeded from balls[].at at the top of possessionRulesV2.
+        if (action.result === "make") {
+          loose.delete(ball);
+        } else {
+          loose.add(ball);
+        }
         break;
       case "pickup":
       case "rebound":
