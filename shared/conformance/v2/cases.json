@@ -13,7 +13,7 @@
     { "file": "invalid/action-bad-movement-intensity.json", "codes": ["SCHEMA_INVALID"] },
     { "file": "invalid/action-intensity-on-screen.json", "codes": ["SCHEMA_INVALID"] },
     { "file": "invalid/ball-carried-and-at.json", "codes": ["SCHEMA_INVALID"] },
-    { "file": "invalid/sem-branch-target-missing.json", "codes": ["REF_BRANCH_THEN_UNKNOWN"] },
+    { "file": "invalid/sem-branch-then-missing.json", "codes": ["REF_BRANCH_THEN_UNKNOWN"] },
     { "file": "invalid/sem-pass-non-carrier.json", "codes": ["BALL_CARRIER_MISMATCH"] },
     { "file": "invalid/malformed.json", "codes": ["JSON_PARSE"] },
     { "file": "invalid/model-legacy.json", "codes": ["MODEL_LEGACY"] },

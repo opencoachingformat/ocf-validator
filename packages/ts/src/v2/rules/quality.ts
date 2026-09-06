@@ -54,7 +54,7 @@ export function qualityRulesV2(doc: OcfDoc, ctx: DocContextV2): Issue[] {
   if (cs) {
     // The OCF document has no court-background color (it is renderer-dependent),
     // so we check the legibility pair that IS in the document: each player's
-    // number (drawn in *_stroke) against its symbol (*_fill). Spec section WCAG.
+    // number (drawn in *_stroke) against its symbol (*_fill). Spec §WCAG.
     const pairs: [string, string][] = [
       ["offense_fill", "offense_stroke"],
       ["defense_fill", "defense_stroke"],
