@@ -64,7 +64,17 @@ def _apply_effect(
             loose.discard(ball)
         elif type_ == "shoot":
             carrier[ball] = None
-            loose.discard(ball)
+            # A make ends the ball's life for possession purposes (it goes
+            # through the net, not onto the floor). A miss -- or an ABSENT
+            # `result` -- leaves the ball live and retrievable: real content
+            # routinely omits `result` on the shoot itself and expresses the
+            # outcome via a sibling `branch` instead, so treating "no result"
+            # as "not a make" (rather than requiring an explicit "miss") is
+            # what lets a subsequent pickup/rebound be represented at all.
+            if action.get("result") == "make":
+                loose.discard(ball)
+            else:
+                loose.add(ball)
         elif type_ in ("pickup", "rebound"):
             carrier[ball] = player
             loose.discard(ball)

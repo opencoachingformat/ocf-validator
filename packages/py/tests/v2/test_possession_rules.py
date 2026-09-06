@@ -197,6 +197,45 @@ def test_a_successful_pickup_transfers_a_loose_ball_to_the_picking_player():
     assert issues == []
 
 
+def test_a_rebound_is_legal_after_a_missed_shot():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}, {"type": "offense", "nr": 2, "x": 1, "y": 5}],
+        "balls": [{"id": "ball_1", "carried_by": "offense_1"}],
+        "actions": [
+            {"id": "a1", "player": "offense_1", "type": "shoot", "ball_id": "ball_1", "result": "miss"},
+            {"id": "a2", "player": "offense_2", "type": "rebound", "ball_id": "ball_1"},
+        ],
+    }
+    issues = run(doc)
+    assert issues == []
+
+
+def test_a_shoot_with_no_result_field_is_treated_as_a_miss_for_possession_purposes():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}, {"type": "offense", "nr": 2, "x": 1, "y": 5}],
+        "balls": [{"id": "ball_1", "carried_by": "offense_1"}],
+        "actions": [
+            {"id": "a1", "player": "offense_1", "type": "shoot", "ball_id": "ball_1"},
+            {"id": "a2", "player": "offense_2", "type": "rebound", "ball_id": "ball_1"},
+        ],
+    }
+    issues = run(doc)
+    assert issues == []
+
+
+def test_a_rebound_after_a_made_shot_is_flagged():
+    doc = {
+        "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}, {"type": "offense", "nr": 2, "x": 1, "y": 5}],
+        "balls": [{"id": "ball_1", "carried_by": "offense_1"}],
+        "actions": [
+            {"id": "a1", "player": "offense_1", "type": "shoot", "ball_id": "ball_1", "result": "make"},
+            {"id": "a2", "player": "offense_2", "type": "rebound", "ball_id": "ball_1"},
+        ],
+    }
+    issues = run(doc)
+    assert any(i.code == "BALL_NOT_AT_LOCATION" for i in issues)
+
+
 def test_two_ball_dribble_where_balls_are_held_by_different_players_is_flagged_per_ball():
     doc = {
         "entities": [{"type": "offense", "nr": 1, "x": 0, "y": 5}, {"type": "offense", "nr": 2, "x": 1, "y": 5}],
