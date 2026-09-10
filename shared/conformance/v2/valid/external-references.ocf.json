@@ -35,7 +35,7 @@
     }
   },
   "court": {
-    "ruleset": "fiba",
+    "court_profile": "fiba",
     "type": "half_court",
     "drill_focus": "offense"
   },

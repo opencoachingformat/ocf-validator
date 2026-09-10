@@ -19,7 +19,7 @@
     "source_format": "open"
   },
   "court": {
-    "ruleset": "fiba",
+    "court_profile": "fiba",
     "type": "full_court",
     "drill_focus": "offense"
   },

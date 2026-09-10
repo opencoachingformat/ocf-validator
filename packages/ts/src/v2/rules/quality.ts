@@ -38,13 +38,13 @@ function* coords(node: unknown): Generator<{ x: number; y: number }> {
 export function qualityRulesV2(doc: OcfDoc, ctx: DocContextV2): Issue[] {
   const issues: Issue[] = [];
 
-  const ext = halfExtent(ctx.ruleset);
+  const ext = halfExtent(ctx.courtProfile);
   if (ext) {
     const entities = ((doc as { entities?: unknown[] }).entities ?? []);
     for (const c of coords(entities)) {
       if (Math.abs(c.x) > ext.x || Math.abs(c.y) > ext.y) {
         issues.push(makeIssue("ENTITY_OFFCOURT", "/entities",
-          { x: c.x, y: c.y, ruleset: ctx.ruleset }));
+          { x: c.x, y: c.y, ruleset: ctx.courtProfile }));
         break;
       }
     }

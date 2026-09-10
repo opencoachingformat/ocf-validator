@@ -8515,17 +8515,17 @@ function qualityRules(doc, ctx) {
 var ocf_action_v2_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
   $id: "https://opencoachingformat.org/schema/v2.json",
-  $comment: "Schema version 2.0.0-alpha.1. Breaking change (frame-less action model) \u2014 part of the v2.0.0 program, not yet a final release (sport-required, affects-roles, and multi-ball are still pending before v2.0.0 ships). The $id keeps the 'v1.json' filename by design even though the content is v2: file naming and x-ocf-version are independent, so a consumer must read x-ocf-version to determine the actual major, not the URL. Version-pinned copies live at /<version>/ocf-action-v1.json.",
+  $comment: "Schema version 2.0.0-alpha.1. Breaking change (frame-less action model, sport required, court.ruleset renamed to court.court_profile, sport-scoped court profiles) \u2014 part of the v2.0.0 program, not yet a final release (affects-roles and remove-rendering-concerns are still pending before v2.0.0 ships; multi-ball's broader generalization beyond two-ball dribbling remains open). Per this project's own filename policy (CONTRIBUTING.md), the schema file's name changes only for a breaking major \u2014 schema/v1.json tracked the whole v1.x line; schema/v2.json now tracks v2.x the same way. Version-pinned copies live at /<version>/ocf-action-v2.json.",
   "x-ocf-version": "2.0.0-alpha.1",
   title: "Open Coaching Format",
   description: "Open standard for team-sport coaching diagrams and animations (invasion team sports; basketball first). Semantic action model.",
   type: "object",
-  required: ["meta", "court", "entities", "actions"],
+  required: ["meta", "court", "entities", "actions", "sport"],
   definitions: {
-    ruleset: {
+    court_profile: {
       type: "string",
       enum: ["fiba", "nba", "ncaa", "nfhs", "custom"],
-      description: "Basketball ruleset. Determines unit, field dimensions and named position coordinates."
+      description: "Named court-geometry variant for the document's sport. Determines unit, field dimensions and named position coordinates. Not a rules concept \u2014 carries no game rules, only court geometry."
     },
     unit: {
       type: "string",
@@ -9176,8 +9176,7 @@ var ocf_action_v2_default = {
     sport: {
       type: "string",
       enum: ["basketball", "soccer", "handball", "hockey", "futsal"],
-      default: "basketball",
-      $comment: "Optional, default basketball (back-compat). Intended to become required in v2.0.0. basketball is fully defined; soccer/handball/hockey/futsal carry provisional minimal action whitelists pending sport-expert review."
+      $comment: "Required as of v2.0.0 (RFC 0007) \u2014 no default, no back-compat absence handling. Enum is closed and hand-maintained; a sport not yet in the registry must be added as a sports/<sport>/ bundle (RFC 0010) before it can be declared. basketball is fully defined; soccer/handball/hockey/futsal carry provisional minimal action whitelists pending sport-expert review."
     },
     meta: {
       type: "object",
@@ -9205,27 +9204,13 @@ var ocf_action_v2_default = {
     },
     court: {
       type: "object",
-      required: ["ruleset", "type"],
+      required: ["court_profile", "type"],
       properties: {
-        ruleset: { $ref: "#/definitions/ruleset" },
+        court_profile: { $ref: "#/definitions/court_profile" },
         type: { type: "string", enum: ["half_court", "full_court"] },
         drill_focus: { type: "string", enum: ["offense", "defense", "transition", "neutral"], default: "offense" },
         wheelchair: { type: "boolean", default: false },
-        custom_dimensions: {
-          type: "object",
-          required: ["unit", "length", "width", "basket_from_baseline", "three_point_distance", "paint_width", "paint_depth", "free_throw_distance"],
-          properties: {
-            unit: { $ref: "#/definitions/unit" },
-            length: { type: "number" },
-            width: { type: "number" },
-            basket_from_baseline: { type: "number" },
-            three_point_distance: { type: "number" },
-            paint_width: { type: "number" },
-            paint_depth: { type: "number" },
-            free_throw_distance: { type: "number" }
-          },
-          additionalProperties: false
-        }
+        custom_dimensions: { type: "object" }
       },
       additionalProperties: false
     },
@@ -9273,7 +9258,7 @@ var ocf_action_v2_default = {
     {
       if: {
         type: "object",
-        properties: { court: { type: "object", properties: { ruleset: { const: "custom" } } } }
+        properties: { court: { type: "object", properties: { court_profile: { const: "custom" } } } }
       },
       then: {
         type: "object",
@@ -9281,13 +9266,7 @@ var ocf_action_v2_default = {
       }
     },
     {
-      $comment: "sport absent OR basketball -> basketball action whitelist (default is a non-validating annotation, so absence must be handled explicitly for back-compat)",
-      if: {
-        anyOf: [
-          { not: { required: ["sport"] } },
-          { properties: { sport: { const: "basketball" } } }
-        ]
-      },
+      if: { required: ["sport"], properties: { sport: { const: "basketball" } } },
       then: {
         type: "object",
         properties: {
@@ -9356,6 +9335,66 @@ var ocf_action_v2_default = {
             items: {
               type: "object",
               properties: { type: { enum: ["move", "pass", "shoot", "defend", "dribble", "tackle", "clear"] } }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: { required: ["sport"], properties: { sport: { const: "basketball" } } },
+      then: {
+        type: "object",
+        properties: {
+          court: {
+            type: "object",
+            properties: {
+              court_profile: { enum: ["fiba", "nba", "ncaa", "nfhs", "custom"] },
+              custom_dimensions: {
+                type: "object",
+                required: ["unit", "length", "width", "basket_from_baseline", "three_point_distance", "paint_width", "paint_depth", "free_throw_distance"],
+                properties: {
+                  unit: { $ref: "#/definitions/unit" },
+                  length: { type: "number" },
+                  width: { type: "number" },
+                  basket_from_baseline: { type: "number" },
+                  three_point_distance: { type: "number" },
+                  paint_width: { type: "number" },
+                  paint_depth: { type: "number" },
+                  free_throw_distance: { type: "number" }
+                },
+                additionalProperties: false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      if: {
+        required: ["sport"],
+        properties: { sport: { enum: ["soccer", "handball", "hockey", "futsal"] } }
+      },
+      then: {
+        type: "object",
+        properties: {
+          court: {
+            type: "object",
+            properties: {
+              court_profile: { const: "custom" },
+              custom_dimensions: {
+                type: "object",
+                required: ["unit", "length", "width", "goal_width", "penalty_box_width", "penalty_box_depth", "penalty_spot_distance"],
+                properties: {
+                  unit: { $ref: "#/definitions/unit" },
+                  length: { type: "number" },
+                  width: { type: "number" },
+                  goal_width: { type: "number" },
+                  penalty_box_width: { type: "number" },
+                  penalty_box_depth: { type: "number" },
+                  penalty_spot_distance: { type: "number" }
+                },
+                additionalProperties: false
+              }
             }
           }
         }
@@ -9504,8 +9543,8 @@ function buildContextV2(doc) {
   walkActions(topLevel, (item) => {
     if (typeof item.id === "string") actionIds.add(item.id);
   });
-  const ruleset = doc.court?.ruleset ?? "custom";
-  return { entityRefs, ballIds, actionIds, ruleset };
+  const courtProfile = doc.court?.court_profile ?? "custom";
+  return { entityRefs, ballIds, actionIds, courtProfile };
 }
 
 // src/v2/rules/references.ts
@@ -9764,7 +9803,7 @@ function* coords2(node) {
 }
 function qualityRulesV2(doc, ctx) {
   const issues = [];
-  const ext = halfExtent(ctx.ruleset);
+  const ext = halfExtent(ctx.courtProfile);
   if (ext) {
     const entities = doc.entities ?? [];
     for (const c of coords2(entities)) {
@@ -9772,7 +9811,7 @@ function qualityRulesV2(doc, ctx) {
         issues.push(makeIssue(
           "ENTITY_OFFCOURT",
           "/entities",
-          { x: c.x, y: c.y, ruleset: ctx.ruleset }
+          { x: c.x, y: c.y, ruleset: ctx.courtProfile }
         ));
         break;
       }
@@ -9885,8 +9924,33 @@ async function validateAsync(doc, opts = {}) {
     return validate2(doc);
   }
 }
+
+// src/validate-text.ts
+function validateText(text) {
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    return assemble([makeIssue("JSON_PARSE", "/", { detail: err.message })], {
+      validatedAgainst: bundledSchemaInfo.version,
+      documentDeclared: null,
+      requiredByDoc: null,
+      match: false
+    });
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    return assemble([makeIssue("JSON_PARSE", "/", { detail: "Document must be a JSON object." })], {
+      validatedAgainst: bundledSchemaInfo.version,
+      documentDeclared: null,
+      requiredByDoc: null,
+      match: false
+    });
+  }
+  return validate2(parsed);
+}
 export {
   bundledSchemaInfo,
   validate2 as validate,
-  validateAsync
+  validateAsync,
+  validateText
 };

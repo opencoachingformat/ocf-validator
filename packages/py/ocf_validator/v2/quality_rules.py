@@ -19,8 +19,8 @@ _FULL = {
 }
 
 
-def _half_extent(ruleset: str) -> dict[str, float] | None:
-    f = _FULL.get(ruleset)
+def _half_extent(court_profile: str) -> dict[str, float] | None:
+    f = _FULL.get(court_profile)
     if not f:
         return None
     return {"x": f["w"] / 2, "y": f["l"] / 2}
@@ -66,7 +66,7 @@ def _coords(node: Any):
 def quality_rules_v2(doc: dict[str, Any], ctx: DocContextV2) -> list[Issue]:
     issues: list[Issue] = []
 
-    ext = _half_extent(ctx.ruleset)
+    ext = _half_extent(ctx.court_profile)
     if ext:
         entities = doc.get("entities") or []
         for x, y in _coords(entities):
@@ -75,7 +75,7 @@ def quality_rules_v2(doc: dict[str, Any], ctx: DocContextV2) -> list[Issue]:
                     make_issue(
                         "ENTITY_OFFCOURT",
                         "/entities",
-                        {"x": x, "y": y, "ruleset": ctx.ruleset},
+                        {"x": x, "y": y, "ruleset": ctx.court_profile},
                     )
                 )
                 break

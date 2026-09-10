@@ -6,7 +6,7 @@ from .types import Issue, Result, assemble
 from .v1.validate import validate as validate_v1
 from .v2.validate import validate_v2
 
-__all__ = ["validate", "validate_file", "Issue", "Result"]
+__all__ = ["validate", "validate_file", "validate_text", "Issue", "Result"]
 
 
 def validate(doc) -> Result:
@@ -38,4 +38,22 @@ def validate_file(path: str) -> Result:
             doc = json.loads(fh.read())
     except (json.JSONDecodeError, OSError) as err:
         return assemble([make_issue("JSON_PARSE", "/", {"detail": str(err)})])
+    return validate(doc)
+
+
+def validate_text(text: str) -> Result:
+    """Same JSON-parse-then-validate pattern as validate_file, for callers
+    that hold the document as a string rather than a filesystem path (e.g. a
+    browser/UI text editor via the WASM or Pyodide build). Parse failures and
+    non-object input are reported as a normal Result (JSON_PARSE), never
+    raised — validate() itself raises TypeError for non-dict input, since it
+    assumes its caller already parsed valid JSON; this is the boundary that
+    turns raw text into that guarantee.
+    """
+    try:
+        doc = json.loads(text)
+    except json.JSONDecodeError as err:
+        return assemble([make_issue("JSON_PARSE", "/", {"detail": str(err)})])
+    if not isinstance(doc, dict):
+        return assemble([make_issue("JSON_PARSE", "/", {"detail": "Document must be a JSON object."})])
     return validate(doc)

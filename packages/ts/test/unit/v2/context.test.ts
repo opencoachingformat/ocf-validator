@@ -2,7 +2,7 @@ import { test, expect, describe } from "vitest";
 import { buildContextV2, walkActions, isBranch } from "../../../src/v2/context.js";
 
 const SAMPLE_DOC = {
-  court: { ruleset: "fiba" },
+  court: { court_profile: "fiba" },
   entities: [
     { type: "offense", nr: 1, x: 0, y: 5 },
     { type: "offense", nr: 2, x: 1, y: 5 },
@@ -22,12 +22,12 @@ const SAMPLE_DOC = {
 };
 
 describe("buildContextV2", () => {
-  test("collects entity refs, ball ids, ruleset", () => {
+  test("collects entity refs, ball ids, court_profile", () => {
     const ctx = buildContextV2(SAMPLE_DOC);
     expect(ctx.entityRefs.has("offense_1")).toBe(true);
     expect(ctx.entityRefs.has("offense_2")).toBe(true);
     expect(ctx.ballIds.has("ball_1")).toBe(true);
-    expect(ctx.ruleset).toBe("fiba");
+    expect(ctx.courtProfile).toBe("fiba");
   });
 
   test("collects every action id, including ones nested inside branch cases", () => {

@@ -13,7 +13,7 @@ class DocContextV2:
     entity_refs: dict[str, EntityInfo] = field(default_factory=dict)
     ball_ids: set[str] = field(default_factory=set)
     action_ids: set[str] = field(default_factory=set)
-    ruleset: str = "custom"
+    court_profile: str = "custom"
 
 
 def _entity_ref(e: dict[str, Any]) -> str | None:
@@ -70,10 +70,10 @@ def build_context_v2(doc: dict[str, Any]) -> DocContextV2:
 
     walk_actions(top_level, _collect)
     court = doc.get("court") or {}
-    ruleset = court.get("ruleset") if isinstance(court, dict) else None
+    court_profile = court.get("court_profile") if isinstance(court, dict) else None
     return DocContextV2(
         entity_refs=entity_refs,
         ball_ids=ball_ids,
         action_ids=action_ids,
-        ruleset=ruleset or "custom",
+        court_profile=court_profile or "custom",
     )

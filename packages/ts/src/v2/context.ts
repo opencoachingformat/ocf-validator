@@ -5,7 +5,7 @@ export interface DocContextV2 {
   entityRefs: Map<string, EntityInfoV2>;
   ballIds: Set<string>;
   actionIds: Set<string>;
-  ruleset: string;
+  courtProfile: string;
 }
 
 function entityRef(e: Record<string, unknown>): string | null {
@@ -59,6 +59,6 @@ export function buildContextV2(doc: OcfDoc): DocContextV2 {
   walkActions(topLevel, (item) => {
     if (typeof item.id === "string") actionIds.add(item.id);
   });
-  const ruleset = ((doc as { court?: { ruleset?: string } }).court?.ruleset) ?? "custom";
-  return { entityRefs, ballIds, actionIds, ruleset };
+  const courtProfile = ((doc as { court?: { court_profile?: string } }).court?.court_profile) ?? "custom";
+  return { entityRefs, ballIds, actionIds, courtProfile };
 }

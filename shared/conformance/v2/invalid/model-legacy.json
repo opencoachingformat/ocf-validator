@@ -1,7 +1,8 @@
 {
   "$schema": "https://opencoachingformat.org/schema/v2.json",
   "meta": { "id": "00000000-0000-4000-8000-0000000000b7", "title": "legacy geometric model" },
-  "court": { "ruleset": "fiba", "type": "half_court" },
+  "sport": "basketball",
+  "court": { "court_profile": "fiba", "type": "half_court" },
   "entities": [
     { "type": "offense", "nr": 1, "x": 0, "y": 5 }
   ],

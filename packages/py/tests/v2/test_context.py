@@ -1,7 +1,7 @@
 from ocf_validator.v2.context import build_context_v2, is_branch, walk_actions
 
 SAMPLE_DOC = {
-    "court": {"ruleset": "fiba"},
+    "court": {"court_profile": "fiba"},
     "entities": [
         {"type": "offense", "nr": 1, "x": 0, "y": 5},
         {"type": "offense", "nr": 2, "x": 1, "y": 5},
@@ -21,12 +21,12 @@ SAMPLE_DOC = {
 }
 
 
-def test_build_context_v2_collects_entities_balls_ruleset():
+def test_build_context_v2_collects_entities_balls_court_profile():
     ctx = build_context_v2(SAMPLE_DOC)
     assert "offense_1" in ctx.entity_refs
     assert "offense_2" in ctx.entity_refs
     assert "ball_1" in ctx.ball_ids
-    assert ctx.ruleset == "fiba"
+    assert ctx.court_profile == "fiba"
 
 
 def test_build_context_v2_collects_nested_branch_action_ids():

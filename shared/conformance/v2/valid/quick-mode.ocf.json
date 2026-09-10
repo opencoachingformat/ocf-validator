@@ -11,8 +11,9 @@
     ],
     "source_format": "open"
   },
+  "sport": "basketball",
   "court": {
-    "ruleset": "fiba",
+    "court_profile": "fiba",
     "type": "half_court"
   },
   "entities": [
