@@ -36,12 +36,21 @@ jobs:
       # at the released ref via the Contents API instead — works regardless of
       # whether Pages is ever turned on, and fails loudly (404) if the tag/ref or
       # file path is wrong instead of silently writing an HTML 404 page as "schema".
+      #
+      # The spec repo's schema filename changes at each breaking major (per its
+      # own CONTRIBUTING.md policy: schema/v1.json, schema/v2.json, ...) — this
+      # workflow can't know the released ref's filename in advance, so it lists
+      # the schema/ directory first and takes whichever single vN.json is there,
+      # rather than guessing a hardcoded name.
       - name: Fetch schema from spec repo at released ref
         env:
           GH_TOKEN: ${{ secrets.SPEC_REPO_TOKEN || github.token }}
           VERSION: ${{ steps.vars.outputs.version }}
         run: |
-          gh api "repos/opencoachingformat/spec/contents/schema/v1.json?ref=$VERSION" \
+          SCHEMA_NAME=$(gh api "repos/opencoachingformat/spec/contents/schema?ref=$VERSION" \
+            --jq '[.[] | select(.name | test("^v[0-9]+\\.json$"))] | if length == 1 then .[0].name else error("expected exactly one vN.json in schema/, found: " + (map(.name) | join(", "))) end')
+          echo "Fetching schema/$SCHEMA_NAME"
+          gh api "repos/opencoachingformat/spec/contents/schema/$SCHEMA_NAME?ref=$VERSION" \
             --jq '.content' | base64 -d > /tmp/new-schema.json
 
       - name: Sanity-check downloaded schema is valid JSON
@@ -51,12 +60,12 @@ jobs:
             exit 1
           }
 
-      # The spec repo's schema file stays named schema/v1.json on disk
-      # regardless of its actual SemVer/x-ocf-version content (filename and
-      # semantic version are independent). Determine the ACTUAL major from
-      # the fetched content itself so a v2.0.0 release never gets vendored
-      # into the v1 slot. Fails loudly (no PR opened) on a major this
-      # workflow doesn't know how to route yet.
+      # The filename fetched above already encodes the major (schema/v2.json
+      # etc.), but this step independently re-derives it from the fetched
+      # content's own x-ocf-version rather than trusting the filename alone —
+      # a defense against a mislabeled or stale file ever getting vendored
+      # into the wrong major's slot. Fails loudly (no PR opened) on a major
+      # this workflow doesn't know how to route yet.
       - name: Determine fetched schema's actual major version
         id: fetched-major
         run: |
