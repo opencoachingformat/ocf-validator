@@ -4324,7 +4324,7 @@ var require_core = __commonJS({
         uriResolver
       };
     }
-    var Ajv3 = class {
+    var Ajv4 = class {
       constructor(opts = {}) {
         this.schemas = {};
         this.refs = {};
@@ -4643,7 +4643,7 @@ var require_core = __commonJS({
           }
         }
       }
-      _addSchema(schema, meta, baseId, validateSchema2 = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
+      _addSchema(schema, meta, baseId, validateSchema3 = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
         let id;
         const { schemaId } = this.opts;
         if (typeof schema == "object") {
@@ -4666,7 +4666,7 @@ var require_core = __commonJS({
             this._checkUnique(baseId);
           this.refs[baseId] = sch;
         }
-        if (validateSchema2)
+        if (validateSchema3)
           this.validateSchema(schema, true);
         return sch;
       }
@@ -4694,9 +4694,9 @@ var require_core = __commonJS({
         }
       }
     };
-    Ajv3.ValidationError = validation_error_1.default;
-    Ajv3.MissingRefError = ref_error_1.default;
-    exports.default = Ajv3;
+    Ajv4.ValidationError = validation_error_1.default;
+    Ajv4.MissingRefError = ref_error_1.default;
+    exports.default = Ajv4;
     function checkOptions(checkOpts, options, msg, log = "error") {
       for (const key in checkOpts) {
         const opt = key;
@@ -6807,7 +6807,7 @@ var require_ajv = __commonJS({
     var draft7MetaSchema = require_json_schema_draft_07();
     var META_SUPPORT_DATA = ["/properties"];
     var META_SCHEMA_ID = "http://json-schema.org/draft-07/schema";
-    var Ajv3 = class extends core_1.default {
+    var Ajv4 = class extends core_1.default {
       _addVocabularies() {
         super._addVocabularies();
         draft7_1.default.forEach((v) => this.addVocabulary(v));
@@ -6826,11 +6826,11 @@ var require_ajv = __commonJS({
         return this.opts.defaultMeta = super.defaultMeta() || (this.getSchema(META_SCHEMA_ID) ? META_SCHEMA_ID : void 0);
       }
     };
-    exports.Ajv = Ajv3;
-    module.exports = exports = Ajv3;
-    module.exports.Ajv = Ajv3;
+    exports.Ajv = Ajv4;
+    module.exports = exports = Ajv4;
+    module.exports.Ajv = Ajv4;
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = Ajv3;
+    exports.default = Ajv4;
     var validate_1 = require_validate();
     Object.defineProperty(exports, "KeywordCxt", { enumerable: true, get: function() {
       return validate_1.KeywordCxt;
@@ -7132,9 +7132,9 @@ var require_limit = __commonJS({
       },
       dependencies: ["format"]
     };
-    var formatLimitPlugin = (ajv2) => {
-      ajv2.addKeyword(exports.formatLimitDefinition);
-      return ajv2;
+    var formatLimitPlugin = (ajv3) => {
+      ajv3.addKeyword(exports.formatLimitDefinition);
+      return ajv3;
     };
     exports.default = formatLimitPlugin;
   }
@@ -7150,17 +7150,17 @@ var require_dist = __commonJS({
     var codegen_1 = require_codegen();
     var fullName = new codegen_1.Name("fullFormats");
     var fastName = new codegen_1.Name("fastFormats");
-    var formatsPlugin = (ajv2, opts = { keywords: true }) => {
+    var formatsPlugin = (ajv3, opts = { keywords: true }) => {
       if (Array.isArray(opts)) {
-        addFormats3(ajv2, opts, formats_1.fullFormats, fullName);
-        return ajv2;
+        addFormats4(ajv3, opts, formats_1.fullFormats, fullName);
+        return ajv3;
       }
       const [formats, exportName] = opts.mode === "fast" ? [formats_1.fastFormats, fastName] : [formats_1.fullFormats, fullName];
       const list = opts.formats || formats_1.formatNames;
-      addFormats3(ajv2, list, formats, exportName);
+      addFormats4(ajv3, list, formats, exportName);
       if (opts.keywords)
-        (0, limit_1.default)(ajv2);
-      return ajv2;
+        (0, limit_1.default)(ajv3);
+      return ajv3;
     };
     formatsPlugin.get = (name, mode = "full") => {
       const formats = mode === "fast" ? formats_1.fastFormats : formats_1.fullFormats;
@@ -7169,12 +7169,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats3(ajv2, list, fs, exportName) {
+    function addFormats4(ajv3, list, fs, exportName) {
       var _a;
       var _b;
-      (_a = (_b = ajv2.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
+      (_a = (_b = ajv3.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv2.addFormat(f, fs[f]);
+        ajv3.addFormat(f, fs[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -9446,6 +9446,25 @@ function validate(doc) {
   return assemble(issues, check.block);
 }
 
+// src/v2/schema-level.ts
+var import_ajv2 = __toESM(require_ajv(), 1);
+var import_ajv_formats2 = __toESM(require_dist(), 1);
+var ajv2 = new import_ajv2.default({ allErrors: true, strictSchema: false, strictRequired: false });
+(0, import_ajv_formats2.default)(ajv2);
+var validateSchema2 = ajv2.compile(ocf_action_v2_default);
+function hasLegacyShape2(doc) {
+  const frames = doc.frames;
+  if (!Array.isArray(frames)) return false;
+  return frames.some((f) => f !== null && typeof f === "object" && "entity_states" in f);
+}
+function schemaLevelV2(doc) {
+  if (hasLegacyShape2(doc)) return [makeIssue("MODEL_LEGACY", "/frames", {})];
+  if (validateSchema2(doc)) return [];
+  return (validateSchema2.errors ?? []).map((e) => makeIssue("SCHEMA_INVALID", e.instancePath || "/", {
+    detail: `${e.instancePath || "(root)"} ${e.message ?? ""}`.trim()
+  }));
+}
+
 // src/v2/context.ts
 function entityRef2(e) {
   const type = e.type;
@@ -9605,7 +9624,11 @@ function applyEffect2(type, player, action, ballIds, carrier, loose) {
       }
       case "shoot":
         carrier.set(ball, null);
-        loose.delete(ball);
+        if (action.result === "make") {
+          loose.delete(ball);
+        } else {
+          loose.add(ball);
+        }
         break;
       case "pickup":
       case "rebound":
@@ -9713,14 +9736,88 @@ function branchRulesV2(doc, ctx) {
   return issues;
 }
 
+// src/v2/rules/quality.ts
+function relLuminance2(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  const ch = [n >> 16 & 255, n >> 8 & 255, n & 255].map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+}
+function contrast2(a, b) {
+  const la = relLuminance2(a), lb = relLuminance2(b);
+  if (la === null || lb === null) return null;
+  const [hi, lo] = la >= lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+function* coords2(node) {
+  if (Array.isArray(node)) {
+    for (const v of node) yield* coords2(v);
+  } else if (node && typeof node === "object") {
+    const o = node;
+    if (typeof o.x === "number" && typeof o.y === "number") yield { x: o.x, y: o.y };
+    for (const v of Object.values(o)) yield* coords2(v);
+  }
+}
+function qualityRulesV2(doc, ctx) {
+  const issues = [];
+  const ext = halfExtent(ctx.ruleset);
+  if (ext) {
+    const entities = doc.entities ?? [];
+    for (const c of coords2(entities)) {
+      if (Math.abs(c.x) > ext.x || Math.abs(c.y) > ext.y) {
+        issues.push(makeIssue(
+          "ENTITY_OFFCOURT",
+          "/entities",
+          { x: c.x, y: c.y, ruleset: ctx.ruleset }
+        ));
+        break;
+      }
+    }
+  }
+  const cs = doc.color_scheme;
+  if (cs) {
+    const pairs = [
+      ["offense_fill", "offense_stroke"],
+      ["defense_fill", "defense_stroke"]
+    ];
+    for (const [fillRole, strokeRole] of pairs) {
+      const fill2 = cs[fillRole], stroke = cs[strokeRole];
+      if (typeof fill2 !== "string" || typeof stroke !== "string") continue;
+      const ratio = contrast2(fill2, stroke);
+      if (ratio !== null && ratio < 4.5) {
+        issues.push(makeIssue(
+          "CONTRAST_LOW",
+          `/color_scheme/${fillRole}`,
+          { ref: `${fillRole} vs ${strokeRole}`, ratio: ratio.toFixed(2) }
+        ));
+      }
+    }
+  }
+  return issues;
+}
+
 // src/v2/validate.ts
 function validateV2(doc, schemaBlock) {
+  const issues = [];
+  if (schemaBlock.requiredByDoc !== null && cmpSemver(schemaBlock.requiredByDoc, schemaBlock.validatedAgainst) > 0) {
+    issues.push(makeIssue("VALIDATOR_MAYBE_OUTDATED", "/meta/min_schema_version", {
+      required: schemaBlock.requiredByDoc,
+      bundled: schemaBlock.validatedAgainst
+    }));
+  }
+  const level0 = schemaLevelV2(doc);
+  if (level0.length > 0) return assemble([...issues, ...level0], schemaBlock);
   const ctx = buildContextV2(doc);
-  const issues = [
+  issues.push(
     ...referenceRulesV2(doc, ctx),
     ...possessionRulesV2(doc, ctx),
-    ...branchRulesV2(doc, ctx)
-  ];
+    ...branchRulesV2(doc, ctx),
+    ...qualityRulesV2(doc, ctx)
+  );
   return assemble(issues, schemaBlock);
 }
 
@@ -9743,8 +9840,8 @@ function validate2(doc) {
 }
 
 // src/validate-async.ts
-var import_ajv2 = __toESM(require_ajv(), 1);
-var import_ajv_formats2 = __toESM(require_dist(), 1);
+var import_ajv3 = __toESM(require_ajv(), 1);
+var import_ajv_formats3 = __toESM(require_dist(), 1);
 async function validateAsync(doc, opts = {}) {
   const { fetchLatestSchema = true, fetchImpl } = opts;
   const pre = schemaCheck(doc);
@@ -9760,9 +9857,9 @@ async function validateAsync(doc, opts = {}) {
     if (!resp.ok) return validate2(doc);
     const fetched = await resp.json();
     const fetchedVersion = typeof fetched["x-ocf-version"] === "string" ? fetched["x-ocf-version"] : bundledSchemaInfo.version;
-    const ajv2 = new import_ajv2.default({ allErrors: true, strictSchema: false, strictRequired: false });
-    (0, import_ajv_formats2.default)(ajv2);
-    const validateFetched = ajv2.compile(fetched);
+    const ajv3 = new import_ajv3.default({ allErrors: true, strictSchema: false, strictRequired: false });
+    (0, import_ajv_formats3.default)(ajv3);
+    const validateFetched = ajv3.compile(fetched);
     const check = schemaCheck(doc, fetchedVersion);
     if (validateFetched(doc)) {
       const res = validate2(doc);

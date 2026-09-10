@@ -49,6 +49,23 @@ jobs:
       - name: Check browser bundle is committed and up to date
         run: git diff --exit-code -- dist/browser
 
+      # npm publish always sets the "latest" dist-tag by default -- even for
+      # a pre-release version (e.g. "0.3.0-alpha.1") -- there is no automatic
+      # protection. A version with a pre-release suffix is published under
+      # the "next" dist-tag instead, so `npm install @opencoachingformat/validator`
+      # (no version specifier) keeps resolving to the last stable release
+      # while a draft/preview build is still available via
+      # `npm install @opencoachingformat/validator@next`.
+      - name: Determine npm dist-tag
+        id: npm-tag
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "tag=next" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
       # Authenticates via OIDC trusted publishing — no NPM_TOKEN needed.
       # Requires a trusted publisher already configured on the npm package
       # pointing at this repo + this workflow file, which in turn requires
@@ -56,12 +73,17 @@ jobs:
       # bootstraps it). Provenance is automatic with trusted publishing, no
       # --provenance flag.
       - name: Publish to npm
-        run: npm publish
+        env:
+          NPM_DIST_TAG: ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --tag "$NPM_DIST_TAG"
 
       # After a successful publish, tell the spec site to bump its pinned
       # validator version and open a PR. Requires an OCF_SITE_DISPATCH_TOKEN
       # secret (contents:write + pull-requests:write on opencoachingformat/spec).
-      # Guarded so a release still succeeds if the secret is absent.
+      # Guarded so a release still succeeds if the secret is absent. Carries
+      # the dist-tag too, so the spec site's own automation can tell a draft/
+      # preview release (tag "next") apart from a stable one and decide
+      # whether to bump its default pin automatically or not.
       - name: Notify spec site to bump the validator pin
         env:
           SITE_TOKEN: ${{ secrets.OCF_SITE_DISPATCH_TOKEN }}
@@ -71,4 +93,4 @@ jobs:
           token: ${{ secrets.OCF_SITE_DISPATCH_TOKEN }}
           repository: opencoachingformat/spec
           event-type: validator_released
-          client-payload: '{"version": "${{ github.ref_name }}"}'
+          client-payload: '{"version": "${{ github.ref_name }}", "npm_tag": "${{ steps.npm-tag.outputs.tag }}"}'
